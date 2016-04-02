@@ -1,0 +1,116 @@
+<head>
+	<meta charset="UTF-8">
+	<title>HUP Demo</title>
+</head>
+<body>
+	{{>ShowAllNodes}}
+</body>
+
+<template name="ShowAllNodes">
+	<h1>All Actions</h1>
+	<ol>
+		{{#each allActions}}
+			<li>{{this}}</li>
+		{{/each}}
+	</ol>
+	<h1>All Nodes</h1>
+	<table border=1>
+		{{#each allNodes}}
+			<tr>
+				<td>{{>ShowSubTree}}</td>
+			</tr>
+		{{/each}}
+	</table>
+</template>
+
+<template name="ShowSubTree">
+	<table border=1>
+		<tr>
+			<td>
+				<!-- This Node -->
+				<table border=1>
+					<tr>
+						<td><strong>_id</strong></td>
+						<td>{{_id}}</td>
+					</tr>
+					<tr>
+						<td><strong>parentId</strong></td>
+						<td>{{parentId}}</td>
+					</tr>
+					<tr>
+						<td><strong>nodeClass</strong></td>
+						<td>{{nodeClass}}</td>
+					</tr>
+					<tr>
+						<td><strong>USN</strong></td>
+						<td>
+							<ul>
+								{{#each upstreamNodeIdList}}
+									<li>{{this}}</li>
+								{{/each}}
+							</ul>
+						</td>
+					</tr>
+					{{#if length (repackageDictionaryAsArray propertyAssignments.byProperty)}}
+						<tr>
+							<td><strong>PA</strong></td>
+							<td>
+								<h3>By Property</h3>
+								<ul>
+									{{#each repackageDictionaryAsArray propertyAssignments.byProperty}}
+										<li>
+											{{key}}: {{join value ', '}}
+										</li>
+									{{/each}}
+								</ul>
+
+								<h3>By Entity Name</h3>
+								<ul>
+									{{#each repackageDictionaryAsArray propertyAssignments.byEntityName}}
+										<li>
+											{{key}}: {{join value ', '}}
+										</li>
+									{{/each}}
+								</ul>
+							</td>
+						</tr>
+					{{/if}}
+					{{#if length (repackageDictionaryAsArray materializedPropertyData.byProperty)}}
+						<tr>
+							<td><strong>MPD</strong></td>
+							<td>
+								<h3>By Property</h3>
+								<ul>
+									{{#each repackageDictionaryAsArray materializedPropertyData.byProperty}}
+										{{#each repackageDictionaryAsArray value}}
+											<li>
+												{{../key}}: {{key}} ({{value}})
+											</li>
+										{{/each}}
+									{{/each}}
+								</ul>
+
+								<h3>By Entity Name</h3>
+								<ul>
+									{{#each repackageDictionaryAsArray materializedPropertyData.byEntityName}}
+										{{#each repackageDictionaryAsArray value}}
+											<li>
+												{{../key}}: {{key}} ({{value}})
+											</li>
+										{{/each}}
+									{{/each}}
+								</ul>
+							</td>
+						</tr>
+					{{/if}}
+				</table>
+			</td>
+			<td>
+				<!-- Child Nodes -->
+				{{#each children}}
+					{{> ShowSubTree}}
+				{{/each}}
+			</td>
+		</tr>
+	</table>
+</template>
