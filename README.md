@@ -9,6 +9,7 @@ Consider a forest of trees representing hierarchies. Suppose a "property" is ass
  - and so on...
  - if "property" is assigned to that "entity" on a descendant of that node, the "upstream proximity" of common descendants of our original node and the aforementioned descendant is the smaller of the two "candidate values"
 
+Note that the usual "top of the pyramid owns everything" functionality can be achieved via the usual types of node children/recursive tree traversal stuff. Here: `node.getRoot()`, `node.getChildren()` and `node.getAllDescendants()`.
 
 ## Table of Contents
 

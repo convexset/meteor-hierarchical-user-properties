@@ -25,7 +25,7 @@ if (Meteor.isClient) {
 
 		Meteor.call('refresh', updateNodeData);
 
-		_.times(7, function(x) {
+		_.times(8, function(x) {
 			setTimeout(function() {
 				Meteor.call("step-" + (x + 1), updateNodeData);
 			}, 5000 + x * 5000);
@@ -155,6 +155,16 @@ if (Meteor.isServer) {
 					console.log("**********************************************");
 				}, 500);
 				return "Removed other tree";
+			},
+			"step-8": function() {
+				console.log("**********************************************");
+				console.log("* 8. Removing property on root");
+				console.log("**********************************************");
+				itemA.removePropertyForEntity("hello", "cat");
+				Meteor.setTimeout(function() {
+					console.log("**********************************************");
+				}, 500);
+				return "Removed property on root";
 			},
 		});
 
