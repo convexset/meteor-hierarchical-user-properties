@@ -322,6 +322,16 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 				self.detach(false);
 				self.attachTo(node);
 			},
+			getPropertyAssignments: function getPropertyAssignments() {
+				return PropertyAssignmentCollection.find({
+					nodeId: this._id,
+				}).fetch();
+			},
+			getMaterializedPropertyData: function getMaterializedPropertyData() {
+				return MaterializedDataCollection.find({
+					nodeId: this._id,
+				}).fetch();
+			},
 			getPropertiesForEntity_OriginalAssignments: function getPropertiesForEntity_OriginalAssignments(entityName) {
 				return PropertyAssignmentCollection.find({
 					nodeId: this._id,

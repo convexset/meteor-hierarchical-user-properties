@@ -111,7 +111,9 @@ Informal Schema Description:
 
 ### Methods on Items from the "Hierarchy Collection"
 
-Given a node called `node`:
+Given a node called `node`...
+
+CRUD Methods:
  - `node.setNodeClass(nodeClass)`: sets `nodeClass` property to `nodeClass`
  - `node.setNodeClassRecursive(nodeClass)`: sets `nodeClass` property to `nodeClass` recursively on sub-tree
  - `node.createChild()`: creates a child (inherits `nodeClass` of `node`)
@@ -122,11 +124,14 @@ Given a node called `node`:
  - `node.detach()`: detaches `node` and the sub-tree that it is the root of (`node` becomes a root node)
  - `node.attachTo(otherNode)`: attaches a detached node (or a root node) `node` to `otherNode`, becoming a child of `otherNode`
  - `node.moveTo(otherNode)`: detaches `node` and attaches it to `otherNode` (see `node.detach` and `node.attachTo` above)
- - `node.getPropertiesForEntity_OriginalAssignments(entityName)`: gets property assignments at `node` for entity with name `entityName`
- - `node.getEntitiesWithProperty_OriginalAssignments(property)`: gets property assignments at `node` for property `property`
- - `node.getPropertiesForEntity(entityName)`: gets implied property information at `node` for entity with name `entityName`
- - `node.getEntitiesWithProperty(property)`: gets implied property information at `node` for property `property`
  - `node.getRoot()`: gets root of the sub-tree that `node` is in
+ 
+Property Assignment and Materialized Property Data Methods:
  - `node.addPropertyForEntity(entityName, property)`: adds the property assignment of property `property` on `node` for entity with name `entityName`
  - `node.removePropertyForEntity(entityName, property)`: removes the property assignment of property `property` on `node` for entity with name `entityName`
-
+ - `node.getPropertyAssignments()`: returns all property assignments on `node`
+ - `node.getMaterializedPropertyData()`: returns all implied property information (materialized property data) at `node`
+ - `node.getPropertiesForEntity_OriginalAssignments(entityName)`: gets property assignments at `node` for entity with name `entityName`
+ - `node.getEntitiesWithProperty_OriginalAssignments(property)`: gets property assignments at `node` for property `property`
+ - `node.getPropertiesForEntity(entityName)`: gets implied property information (materialized property data) at `node` for entity with name `entityName`
+ - `node.getEntitiesWithProperty(property)`: gets implied property information (materialized property data) at `node` for property `property`
