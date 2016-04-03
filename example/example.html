@@ -7,13 +7,33 @@
 </body>
 
 <template name="ShowAllNodes">
-	<h1>All Actions</h1>
+	<h2>What's All This</h2>
+	<ol>
+		<li>This is a demo of things happening server side on using the <code>HierarchicalUserProperties</code> package</li>
+		<li>... actually, things are initiated by Meteor methods called from the client, and having information on the state of the database sent to the client.</li>
+		<li>The aforementioned actions are logged under All Actions below.</li>
+		<li>
+			Under all nodes is a description of the content of database. There are three collections:
+			<ol>
+				<li>the "hierarchy collection": storing structural information about the hierarchy (best viewed as a forest of trees)</li>
+				<li>the "property assignments collection": storing (fundamental) information about the "properties" assigned to "entities" on nodes in the "hierarchy"</li>
+				<li>the "materialized property data collection": stores a materialized representation of the downward cascade of "properties for entities"</li>
+			</ol>
+		</li>
+		<li>Below, USN refers to "upstream nodes", PA refers to "Property Assignment" and MPD refers to "Materialized Property Data"</li>
+		<li>See the documentation on <a href="https://github.com/convexset/meteor-hierarchical-user-properties/" target=_blank>GitHub</a> or <a href="https://atmospherejs.com/convexset/hierarchical-user-properties" target=_blank>Atmosphere</a> for more info.</li>
+	</ol>
+
+	
+	<h2>All Actions</h2>
 	<ol>
 		{{#each allActions}}
 			<li>{{this}}</li>
 		{{/each}}
 	</ol>
-	<h1>All Nodes</h1>
+
+
+	<h2>All Nodes</h2>
 	<table border=1>
 		{{#each allNodes}}
 			<tr>
