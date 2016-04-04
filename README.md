@@ -57,8 +57,7 @@ The resulting object `HierarchicalUserProperties` may then be used as follows.
 
 ### Creating Hierarchy Items
 
-`HierarchicalUserProperties.createHierarchyItem(nodeClass)`: creates a hierarchy item with no parent node (a root of a new tree)
- - `nodeClass`: gives the type of this node (a `String`) which will be the default `nodeClass` for newly created child nodes
+`HierarchicalUserProperties.createHierarchyItem()`: creates a hierarchy item with no parent node (a root of a new tree)
 
 ### Getting Items and Cursors
 
@@ -68,8 +67,7 @@ Informal Schema Description:
 ```javascript
 {
     parentId: HierarchyCollection._id,
-    upstreamNodeIdList: [HierarchyCollection._id],
-    nodeClass: String, // default: ""
+    upstreamNodeIdList: [HierarchyCollection._id]
 }
 ```
 
@@ -114,9 +112,7 @@ Informal Schema Description:
 Given a node called `node`...
 
 CRUD Methods:
- - `node.setNodeClass(nodeClass)`: sets `nodeClass` property to `nodeClass`
- - `node.setNodeClassRecursive(nodeClass)`: sets `nodeClass` property to `nodeClass` recursively on sub-tree
- - `node.createChild()`: creates a child (inherits `nodeClass` of `node`)
+ - `node.createChild()`: creates a child on `node`
  - `node.getChildren()`: gets all children (direct descendants) of `node` (returns an array)
  - `node.getAllDescendants()`: gets all descendants of `node` (returns an array)
  - `node.removeNode()`: removes `node` and sets parent of the children of `node` to the parent (if any) of `node`

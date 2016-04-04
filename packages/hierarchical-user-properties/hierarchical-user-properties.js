@@ -60,7 +60,6 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 			Schema: {
 				parentId: HierarchyCollection._id,
 				upstreamNodeIdList: [HierarchyCollection._id],
-				nodeClass: String, // default: ""
 			}
 		*/
 		function materializeForChildren_withStopsAtPropertyDefinitions(entityName, property, node, proximity) {
@@ -110,26 +109,6 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 
 
 		HierarchyNode.prototype = {
-			setNodeClass: function setNodeClass(nodeClass) {
-				this.nodeClass = nodeClass;
-				HierarchyCollection.update({
-					_id: this._id
-				}, {
-					$set: {
-						nodeClass: nodeClass
-					}
-				});
-			},
-			setNodeClassRecursive: function setNodeClassRecursive(nodeClass) {
-				this.setNodeClass(nodeClass);
-				HierarchyCollection.update({
-					upstreamNodeIdList: this._id
-				}, {
-					$set: {
-						nodeClass: nodeClass
-					}
-				});
-			},
 			createChild: function createChild() {
 				var self = this;
 
@@ -137,7 +116,6 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 				var _id = HierarchyCollection.insert({
 					parentId: self._id,
 					upstreamNodeIdList: [self._id].concat(self.upstreamNodeIdList),
-					nodeClass: self.nodeClass
 				});
 
 				// if child successfully created...
@@ -582,11 +560,10 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 		PackageUtilities.addPropertyGetter(HUP, "_HierarchyCursor", () => HierarchyCollection.find());
 		PackageUtilities.addImmutablePropertyFunction(HUP, "getHierarchyItem", (selector) => !!selector ? HierarchyCollection.findOne(selector) : HierarchyCollection.findOne());
 		PackageUtilities.addImmutablePropertyFunction(HUP, "getHierarchyCursor", (selector) => !!selector ? HierarchyCollection.find(selector) : HierarchyCollection.find());
-		PackageUtilities.addImmutablePropertyFunction(HUP, "createHierarchyItem", function createHierarchyItem(nodeClass = "") {
+		PackageUtilities.addImmutablePropertyFunction(HUP, "createHierarchyItem", function createHierarchyItem() {
 			return HierarchyCollection.insert({
 				parentId: null,
 				upstreamNodeIdList: [],
-				nodeClass: nodeClass
 			});
 		});
 
@@ -597,14 +574,11 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 				],
 				[
 					["upstreamNodeIdList", 1]
-				],
-				[
-					["nodeClass", 1],
-					["_id", 1]
 				]
 			];
 			_.forEach(entries, function(entry) {
 				INFO('db.' + HierarchyCollection._name + '.createIndex({' + (entry.map(x => "\"" + x[0] + "\": " + x[1]).join(', ') + '});'));
+				HierarchyCollection._ensureIndex(_.object(entry));
 			});
 		}());
 	}());
@@ -642,6 +616,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 			];
 			_.forEach(entries, function(entry) {
 				INFO('db.' + PropertyAssignmentCollection._name + '.createIndex({' + (entry.map(x => "\"" + x[0] + "\": " + x[1]).join(', ') + '});'));
+				PropertyAssignmentCollection._ensureIndex(_.object(entry));
 			});
 		}());
 	}());
@@ -682,6 +657,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 			];
 			_.forEach(entries, function(entry) {
 				INFO('db.' + MaterializedDataCollection._name + '.createIndex({' + (entry.map(x => "\"" + x[0] + "\": " + x[1]).join(', ') + '});'));
+				MaterializedDataCollection._ensureIndex(_.object(entry));
 			});
 		}());
 	}());

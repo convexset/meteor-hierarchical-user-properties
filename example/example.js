@@ -57,7 +57,7 @@ if (Meteor.isServer) {
 				PAC.remove({});
 				MDC.remove({});
 
-				itemA = HC.findOne(HierarchicalUserProperties.createHierarchyItem('A'));
+				itemA = HC.findOne(HierarchicalUserProperties.createHierarchyItem());
 				itemA.createChild();
 				itemA1 = HC.findOne(itemA.createChild());
 				itemA1.createChild();
@@ -66,7 +66,7 @@ if (Meteor.isServer) {
 				itemA13.createChild();
 				itemA13.createChild();
 
-				itemB = HC.findOne(HierarchicalUserProperties.createHierarchyItem('B'));
+				itemB = HC.findOne(HierarchicalUserProperties.createHierarchyItem());
 				itemB.createChild();
 				itemB.createChild();
 
