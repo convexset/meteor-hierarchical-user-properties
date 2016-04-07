@@ -3,11 +3,11 @@
 The main function of this package is to provide a framework for upward delegation of "properties" (e.g.: responsibilities) in hierarchies on the server-side.
 
 Consider a forest of trees representing hierarchies. Suppose a "property" is assigned to an "entity" on some node. Then it implies that:
- - "property" is assigned to that "entity" on that node with "upstream proximity" 0
- - "property" is assigned to that "entity" on the children of that node with "upstream proximity" 1
- - "property" is assigned to that "entity" on the children of the children of that node with "upstream proximity" 2
+ - "property" is assigned to that "entity" on that node with "upstream distance" 0
+ - "property" is assigned to that "entity" on the children of that node with "upstream distance" 1
+ - "property" is assigned to that "entity" on the children of the children of that node with "upstream distance" 2
  - and so on...
- - if "property" is assigned to that "entity" on a descendant of that node, the "upstream proximity" of common descendants of our original node and the aforementioned descendant is the smaller of the two "candidate values"
+ - if "property" is assigned to that "entity" on a descendant of that node, the "upstream distance" of common descendants of our original node and the aforementioned descendant is the smaller of the two "candidate values"
 
 Note that the usual "top of the pyramid owns everything" functionality can be achieved via the usual types of node children/recursive tree traversal stuff. Here: `node.getRoot()`, `node.getChildren()` and `node.getAllDescendants()`.
 
@@ -25,6 +25,7 @@ Note that the usual "top of the pyramid owns everything" functionality can be ac
     - [The "Property Assignment Collection"](#the-property-assignment-collection)
     - [The "Materialized Property Data Collection"](#the-materialized-property-data-collection)
   - [Methods on Items from the "Hierarchy Collection"](#methods-on-items-from-the-hierarchy-collection)
+- [Philosophy](#philosophy)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -98,7 +99,7 @@ Informal Schema Description:
     nodeId: HierarchyCollection._id,
     entityName: String,
     property: String,
-    upstreamProximity: Number
+    upstreamDistance: Number
 }
 ```
 
@@ -131,3 +132,19 @@ Property Assignment and Materialized Property Data Methods:
  - `node.getEntitiesWithProperty_OriginalAssignments(property)`: gets property assignments at `node` for property `property`
  - `node.getPropertiesForEntity(entityName)`: gets implied property information (materialized property data) at `node` for entity with name `entityName`
  - `node.getEntitiesWithProperty(property)`: gets implied property information (materialized property data) at `node` for property `property`
+
+## Philosophy
+
+Consider some hierarchy of "things" and think of "entities" as people and "properties" as responsibilities:
+ - responsibility for "some thing" means responsibility for all the sub-things that are parts of (descendant nodes) of that "some thing"
+ - responsibility for "some thing" does not imply responsibility for the "higher level" things that that "some thing" is part of ("above his pay grade" is an expression that comes to mind)
+
+Here's something more concrete on "who is the appropriate one to take on a responsibility":
+ - I want to open the door of Room 2A in Office 2 in Building X. So I need to find someone who has the key, and I want to go to approach the most appropriate person (and not the Building Owner who has the authority to get the key certainly but...)
+ - If there is no assigned occupant for Room 2A, I look for an office manager for Office 2; If there is no such office manager, I look for the building manager of Building X
+ - But of course, if there were an assigned occupant for Room 2A, it would not be appropriate to go look for an office manager or a building manager
+ - ... and, if there were an office manager for Office 2, it would not be appropriate to go hunt for a building manager
+
+Here's something concrete on the whole "above his pay grade" stuff:
+ - Consider the above setting, but now someone wants to run an audit of all the rooms in Office 2.
+ - It would not be sensible to approach the occupant of Room 2A because his role doesn't encompass that. It is "above his pay grade".

@@ -70,12 +70,12 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					nodeId: child._id
 				};
 				var _materializedDataElem = HUP.getMaterializedDataItem(_itemData);
-				if ((!_materializedDataElem) || (_materializedDataElem.upstreamProximity !== 0)) {
+				if ((!_materializedDataElem) || (_materializedDataElem.upstreamDistance !== 0)) {
 					if (!_materializedDataElem) {
 						LOG("inserting because no data at", _itemData);
 					} else {
 						LOG("updating existing materialized property data", _materializedDataElem);
-						LOG("new upstreamProximity:", proximity + 1);
+						LOG("new upstreamDistance:", proximity + 1);
 					}
 
 					MaterializedDataCollection.upsert({
@@ -84,7 +84,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						nodeId: child._id,
 					}, {
 						$set: {
-							upstreamProximity: proximity + 1
+							upstreamDistance: proximity + 1
 						}
 					});
 					materializeForChildren_withStopsAtPropertyDefinitions(entityName, property, child, proximity + 1);
@@ -94,17 +94,17 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 			});
 		}
 
-		function propagateMaterialization_withNoStopChecks(node, entityName, property, upstreamProximity = 0) {
+		function propagateMaterialization_withNoStopChecks(node, entityName, property, upstreamDistance = 0) {
 			MaterializedDataCollection.upsert({
 				nodeId: node._id,
 				entityName: entityName,
 				property: property
 			}, {
 				$set: {
-					upstreamProximity: upstreamProximity
+					upstreamDistance: upstreamDistance
 				}
 			});
-			node.getChildren().forEach(child => propagateMaterialization_withNoStopChecks(child, entityName, property, upstreamProximity + 1));
+			node.getChildren().forEach(child => propagateMaterialization_withNoStopChecks(child, entityName, property, upstreamDistance + 1));
 		}
 
 
@@ -127,7 +127,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					}).forEach(function(mpd) {
 						MaterializedDataCollection.insert(_.extend(mpd, {
 							nodeId: _id,
-							upstreamProximity: mpd.upstreamProximity + 1
+							upstreamDistance: mpd.upstreamDistance + 1
 						}));
 					});
 				} else {
@@ -328,7 +328,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					nodeId: this._id,
 					entityName: entityName
 				}).forEach(function(mpd) {
-					ret[mpd.property] = mpd.upstreamProximity;
+					ret[mpd.property] = mpd.upstreamDistance;
 				});
 				return ret;
 			},
@@ -338,7 +338,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					nodeId: this._id,
 					property: property
 				}).forEach(function(mpd) {
-					ret[mpd.entityName] = mpd.upstreamProximity;
+					ret[mpd.entityName] = mpd.upstreamDistance;
 				});
 				return ret;
 			},
@@ -369,7 +369,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 				PropertyAssignmentCollection.insert(itemData);
 				MaterializedDataCollection.upsert(itemData, {
 					$set: {
-						upstreamProximity: 0
+						upstreamDistance: 0
 					}
 				});
 
@@ -399,9 +399,9 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 				}));
 				LOG("checking parent for the same materialized property data... result:", parentMPD);
 
-				function recursiveMPDUpdate(node, upstreamProximity) {
+				function recursiveMPDUpdate(node, upstreamDistance) {
 					// deal with self, then children
-					if (typeof upstreamProximity === "undefined") {
+					if (typeof upstreamDistance === "undefined") {
 						// remove mode
 						LOG("recursive update [entityName=" + entityName + ", property=" + property + "] (remove mode) at", node);
 						MaterializedDataCollection.remove({
@@ -411,14 +411,14 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						});
 					} else {
 						// update mode
-						LOG("recursive update [entityName=" + entityName + ", property=" + property + "] (update mode) with upstreamProximity=" + upstreamProximity + " at", node);
+						LOG("recursive update [entityName=" + entityName + ", property=" + property + "] (update mode) with upstreamDistance=" + upstreamDistance + " at", node);
 						MaterializedDataCollection.update({
 							entityName: entityName,
 							nodeId: node._id,
 							property: property,
 						}, {
 							$set: {
-								upstreamProximity: upstreamProximity
+								upstreamDistance: upstreamDistance
 							}
 						});
 					}
@@ -431,29 +431,29 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						};
 						var _materializedDataElem = HUP.getMaterializedDataItem(_itemData);
 
-						if (_materializedDataElem.upstreamProximity !== 0) {
-							// only remove/update if upstreamProximity !== 0
-							if (typeof upstreamProximity === "undefined") {
+						if (_materializedDataElem.upstreamDistance !== 0) {
+							// only remove/update if upstreamDistance !== 0
+							if (typeof upstreamDistance === "undefined") {
 								// remove mode
 								recursiveMPDUpdate(child);
 							} else {
 								// update mode
-								recursiveMPDUpdate(child, upstreamProximity + 1);
+								recursiveMPDUpdate(child, upstreamDistance + 1);
 							}
 						} else {
-							LOG("recursive update not proceeding (since mpd.upstreamProximity=0) at", child);
+							LOG("recursive update not proceeding (since mpd.upstreamDistance=0) at", child);
 						}
 					});
 				}
 
 				if (!!parentMPD) {
-					// if parent has some materialized property data, update materialization on subtree, stopping at those with upstreamProximity = 0
-					LOG("parent has relevant MPD with proximity " + parentMPD.upstreamProximity);
+					// if parent has some materialized property data, update materialization on subtree, stopping at those with upstreamDistance = 0
+					LOG("parent has relevant MPD with proximity " + parentMPD.upstreamDistance);
 
 					// recursiveMPDUpdate in update mode
-					recursiveMPDUpdate(self, parentMPD.upstreamProximity + 1);
+					recursiveMPDUpdate(self, parentMPD.upstreamDistance + 1);
 				} else {
-					// if parent does not have that, remove traces on subtree, stopping at those with upstreamProximity = 0
+					// if parent does not have that, remove traces on subtree, stopping at those with upstreamDistance = 0
 					LOG("parent does not have relevant MPD");
 
 					// recursiveMPDUpdate in remove mode
@@ -478,7 +478,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						MaterializedDataCollection.find({
 							nodeId: self.parentId
 						}).forEach(function(mpd) {
-							propagateMaterialization_withNoStopChecks(self, mpd.entityName, mpd.property, mpd.upstreamProximity + 1);
+							propagateMaterialization_withNoStopChecks(self, mpd.entityName, mpd.property, mpd.upstreamDistance + 1);
 						});
 					} else {
 						LOG("No parent. (No need to consider parent materializations)");
@@ -525,18 +525,18 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					nodeId: self._id
 				}).forEach(function(mpd) {
 					if (self.materializedPropertyData.byEntityName.hasOwnProperty(mpd.entityName)) {
-						self.materializedPropertyData.byEntityName[mpd.entityName][mpd.property] = mpd.upstreamProximity;
+						self.materializedPropertyData.byEntityName[mpd.entityName][mpd.property] = mpd.upstreamDistance;
 					} else {
 						self.materializedPropertyData.byEntityName[mpd.entityName] = {
-							[mpd.property]: mpd.upstreamProximity
+							[mpd.property]: mpd.upstreamDistance
 						};
 					}
 
 					if (self.materializedPropertyData.byProperty.hasOwnProperty(mpd.property)) {
-						self.materializedPropertyData.byProperty[mpd.property][mpd.entityName] = mpd.upstreamProximity;
+						self.materializedPropertyData.byProperty[mpd.property][mpd.entityName] = mpd.upstreamDistance;
 					} else {
 						self.materializedPropertyData.byProperty[mpd.property] = {
-							[mpd.entityName]: mpd.upstreamProximity
+							[mpd.entityName]: mpd.upstreamDistance
 						};
 					}
 				});
@@ -629,7 +629,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 				nodeId: HierarchyCollection._id,
 				entityName: String,
 				property: String,
-				upstreamProximity: Number
+				upstreamDistance: Number
 			}
 		*/
 		MaterializedDataCollection = new Meteor.Collection(materializedDataCollectionName);
