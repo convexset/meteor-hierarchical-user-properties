@@ -125,6 +125,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					MaterializedDataCollection.find({
 						nodeId: self._id
 					}).forEach(function(mpd) {
+						delete mpd._id;
 						MaterializedDataCollection.insert(_.extend(mpd, {
 							nodeId: _id,
 							upstreamDistance: mpd.upstreamDistance + 1

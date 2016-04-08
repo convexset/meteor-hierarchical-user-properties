@@ -1,6 +1,6 @@
 Package.describe({
 	name: 'convexset:hierarchical-user-properties',
-	version: '0.1.2_1',
+	version: '0.1.2_2',
 	summary: 'Provides support in Meteor for hierarchical user properties',
 	git: 'https://github.com/convexset/meteor-hierarchical-user-properties',
 	documentation: '../../README.md'

@@ -25,7 +25,7 @@ if (Meteor.isClient) {
 
 		Meteor.call('refresh', updateNodeData);
 
-		_.times(8, function(x) {
+		_.times(9, function(x) {
 			setTimeout(function() {
 				Meteor.call("step-" + (x + 1), updateNodeData);
 			}, 5000 + x * 5000);
@@ -63,8 +63,6 @@ if (Meteor.isServer) {
 				itemA1.createChild();
 				itemA1.createChild();
 				itemA13 = HC.findOne(itemA1.createChild());
-				itemA13.createChild();
-				itemA13.createChild();
 
 				itemB = HC.findOne(HierarchicalUserProperties.createHierarchyItem());
 				itemB.createChild();
@@ -87,7 +85,18 @@ if (Meteor.isServer) {
 			},
 			"step-2": function() {
 				console.log("**********************************************");
-				console.log("* 2. Adding same property on senior node");
+				console.log("* 2. Adding children to junior node");
+				console.log("**********************************************");
+				itemA13.createChild();
+				itemA13.createChild();
+				Meteor.setTimeout(function() {
+					console.log("**********************************************");
+				}, 500);
+				return "Added children to junior node";
+			},
+			"step-3": function() {
+				console.log("**********************************************");
+				console.log("* 3. Adding same property on senior node");
 				console.log("**********************************************");
 				itemA1.addPropertyForEntity("abc", "prop1");
 				Meteor.setTimeout(function() {
@@ -95,17 +104,17 @@ if (Meteor.isServer) {
 				}, 500);
 				return "Added property on senior node";
 			},
-			"step-3": function() {
+			"step-4": function() {
 				var action;
 				if (true) {
 					console.log("**********************************************");
-					console.log("* 3. Removing property on junior node");
+					console.log("* 4. Removing property on junior node");
 					console.log("**********************************************");
 					itemA13.removePropertyForEntity("abc", "prop1");
 					action = "Removed property on junior node";
 				} else {
 					console.log("**********************************************");
-					console.log("* 3. Removing property on senior node");
+					console.log("* 4. Removing property on senior node");
 					console.log("**********************************************");
 					itemA1.removePropertyForEntity("abc", "prop1");
 					action = "Removed property on senior node";
@@ -115,9 +124,9 @@ if (Meteor.isServer) {
 				}, 500);
 				return action;
 			},
-			"step-4": function() {
+			"step-5": function() {
 				console.log("**********************************************");
-				console.log("* 4. Adding properties to root of other tree");
+				console.log("* 5. Adding properties to root of other tree");
 				console.log("**********************************************");
 				itemB.addPropertyForEntity("xyz", "prop1");
 				itemB.addPropertyForEntity("abc", "prop2");
@@ -126,9 +135,9 @@ if (Meteor.isServer) {
 				}, 500);
 				return "Added properties to root of other tree";
 			},
-			"step-5": function() {
+			"step-6": function() {
 				console.log("**********************************************");
-				console.log("* 5. Moving junior node to other tree");
+				console.log("* 6. Moving junior node to other tree");
 				console.log("**********************************************");
 				itemA13.moveTo(itemB);
 				Meteor.setTimeout(function() {
@@ -136,9 +145,9 @@ if (Meteor.isServer) {
 				}, 500);
 				return "Moved junior node to other tree";
 			},
-			"step-6": function() {
+			"step-7": function() {
 				console.log("**********************************************");
-				console.log("* 6. Removing junior node");
+				console.log("* 7. Removing junior node");
 				console.log("**********************************************");
 				itemA13.removeNode();
 				Meteor.setTimeout(function() {
@@ -146,9 +155,9 @@ if (Meteor.isServer) {
 				}, 500);
 				return "Removed junior node";
 			},
-			"step-7": function() {
+			"step-8": function() {
 				console.log("**********************************************");
-				console.log("* 7. Removing other tree");
+				console.log("* 8. Removing other tree");
 				console.log("**********************************************");
 				itemB.removeSubTree();
 				Meteor.setTimeout(function() {
@@ -156,9 +165,9 @@ if (Meteor.isServer) {
 				}, 500);
 				return "Removed other tree";
 			},
-			"step-8": function() {
+			"step-9": function() {
 				console.log("**********************************************");
-				console.log("* 8. Removing property on root");
+				console.log("* 9. Removing property on root");
 				console.log("**********************************************");
 				itemA.removePropertyForEntity("hello", "cat");
 				Meteor.setTimeout(function() {
