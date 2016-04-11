@@ -58,7 +58,7 @@ The resulting object `HierarchicalUserProperties` may then be used as follows.
 
 ### Creating Hierarchy Items
 
-`HierarchicalUserProperties.createHierarchyItem()`: creates a hierarchy item with no parent node (a root of a new tree)
+`HierarchicalUserProperties.createHierarchyItem()`: creates a hierarchy item with no parent node (a root of a new tree); also returns the created item
 
 ### Getting Items and Cursors
 
@@ -113,7 +113,7 @@ Informal Schema Description:
 Given a node called `node`...
 
 CRUD Methods:
- - `node.createChild()`: creates a child on `node`
+ - `node.createChild()`: creates a child on `node`; also returns the created item
  - `node.getChildren()`: gets all children (direct descendants) of `node` (returns an array)
  - `node.getAllDescendants()`: gets all descendants of `node` (returns an array)
  - `node.removeNode()`: removes `node` and sets parent of the children of `node` to the parent (if any) of `node`

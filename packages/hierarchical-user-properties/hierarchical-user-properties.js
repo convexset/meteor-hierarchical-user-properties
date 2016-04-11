@@ -72,7 +72,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 				var _materializedDataElem = HUP.getMaterializedDataItem(_itemData);
 				if ((!_materializedDataElem) || (_materializedDataElem.upstreamDistance !== 0)) {
 					if (!_materializedDataElem) {
-						LOG("inserting because no data at", _itemData);
+						LOG("inserting materialized property data record because no data at", _itemData);
 					} else {
 						LOG("updating existing materialized property data", _materializedDataElem);
 						LOG("new upstreamDistance:", proximity + 1);
@@ -136,7 +136,11 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					throw new Meteor.Error("unable-to-create-child");
 				}
 
-				return _id;
+				var item = HierarchyCollection.findOne({
+					_id: _id
+				});
+				LOG("[createChild] parent:", self, "; child: ", item);
+				return item;
 			},
 			getChildren: function getChildren() {
 				return HierarchyCollection.find({
@@ -562,10 +566,15 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 		PackageUtilities.addImmutablePropertyFunction(HUP, "getHierarchyItem", (selector) => !!selector ? HierarchyCollection.findOne(selector) : HierarchyCollection.findOne());
 		PackageUtilities.addImmutablePropertyFunction(HUP, "getHierarchyCursor", (selector) => !!selector ? HierarchyCollection.find(selector) : HierarchyCollection.find());
 		PackageUtilities.addImmutablePropertyFunction(HUP, "createHierarchyItem", function createHierarchyItem() {
-			return HierarchyCollection.insert({
+			var _id = HierarchyCollection.insert({
 				parentId: null,
 				upstreamNodeIdList: [],
 			});
+			var item = HierarchyCollection.findOne({
+				_id: _id
+			});
+			LOG("[createHierarchyItem]", item);
+			return item;
 		});
 
 		(function() {

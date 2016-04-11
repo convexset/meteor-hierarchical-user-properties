@@ -46,6 +46,7 @@ if (Meteor.isServer) {
 				return HierarchicalUserProperties._buildForest();
 			},
 			"refresh": function() {
+				this.unblock();
 				console.log("**********************************************");
 				console.log("* STARTING UP!!!!")
 				console.log("**********************************************");
@@ -57,33 +58,39 @@ if (Meteor.isServer) {
 				PAC.remove({});
 				MDC.remove({});
 
-				itemA = HC.findOne(HierarchicalUserProperties.createHierarchyItem());
-				itemA.createChild();
-				itemA1 = HC.findOne(itemA.createChild());
+				itemA = HierarchicalUserProperties.createHierarchyItem();
+				itemA1 = itemA.createChild();
 				itemA1.createChild();
 				itemA1.createChild();
-				itemA13 = HC.findOne(itemA1.createChild());
+				itemA13 = itemA1.createChild();
+				itemA2 = itemA.createChild();
+				itemA2.createChild()
+				itemA2.createChild()
 
-				itemB = HC.findOne(HierarchicalUserProperties.createHierarchyItem());
+				itemB = HierarchicalUserProperties.createHierarchyItem();
 				itemB.createChild();
 				itemB.createChild();
 
-				itemA.addPropertyForEntity("hello", "cat");
+				itemA.addPropertyForEntity("big-boss-cat", "bossing-kitties-around");
+				itemA.addPropertyForEntity("chair-cat", "bossing-kitties-around");
+				itemA2.addPropertyForEntity("middle-manager-cat", "bossing-kitties-around");
 
 
-				return "Refreshed hierarchy";
+				return "Refreshed hierarchy. (With cat company leadership!)";
 			},
 			"step-1": function() {
+				this.unblock();
 				console.log("**********************************************");
 				console.log("* 1. Adding property on junior node");
 				console.log("**********************************************");
-				itemA13.addPropertyForEntity("abc", "prop1");
+				itemA13.addPropertyForEntity("some-cat", "some-cat-work");
 				Meteor.setTimeout(function() {
 					console.log("**********************************************");
 				}, 500);
-				return "Added property on junior node";
+				return "Added property on junior node. (Assigning some-cat a role.)";
 			},
 			"step-2": function() {
+				this.unblock();
 				console.log("**********************************************");
 				console.log("* 2. Adding children to junior node");
 				console.log("**********************************************");
@@ -95,29 +102,32 @@ if (Meteor.isServer) {
 				return "Added children to junior node";
 			},
 			"step-3": function() {
+				this.unblock();
 				console.log("**********************************************");
 				console.log("* 3. Adding same property on senior node");
 				console.log("**********************************************");
-				itemA1.addPropertyForEntity("abc", "prop1");
+				itemA1.addPropertyForEntity("some-cat", "some-cat-work");
+				itemA1.addPropertyForEntity("some-cat", "bossing-kitties-around");
 				Meteor.setTimeout(function() {
 					console.log("**********************************************");
 				}, 500);
-				return "Added property on senior node";
+				return "Added property on senior node (some-cat gets the same role at a higher level)";
 			},
 			"step-4": function() {
+				this.unblock();
 				var action;
 				if (true) {
 					console.log("**********************************************");
 					console.log("* 4. Removing property on junior node");
 					console.log("**********************************************");
-					itemA13.removePropertyForEntity("abc", "prop1");
-					action = "Removed property on junior node";
+					itemA13.removePropertyForEntity("some-cat", "some-cat-work");
+					action = "Removed property on junior node (some-cat to focus on \"management\")";
 				} else {
 					console.log("**********************************************");
 					console.log("* 4. Removing property on senior node");
 					console.log("**********************************************");
-					itemA1.removePropertyForEntity("abc", "prop1");
-					action = "Removed property on senior node";
+					itemA1.removePropertyForEntity("some-cat", "some-cat-work");
+					action = "Removed property on senior node (some-cat has resigned!?)";
 				}
 				Meteor.setTimeout(function() {
 					console.log("**********************************************");
@@ -125,17 +135,19 @@ if (Meteor.isServer) {
 				return action;
 			},
 			"step-5": function() {
+				this.unblock();
 				console.log("**********************************************");
 				console.log("* 5. Adding properties to root of other tree");
 				console.log("**********************************************");
-				itemB.addPropertyForEntity("xyz", "prop1");
-				itemB.addPropertyForEntity("abc", "prop2");
+				itemB.addPropertyForEntity("rat", "flee-from-predators");
+				itemB.addPropertyForEntity("bird", "flee-from-predators");
 				Meteor.setTimeout(function() {
 					console.log("**********************************************");
 				}, 500);
-				return "Added properties to root of other tree";
+				return "Added properties to root of other tree (non-cats getting non-cat roles)";
 			},
 			"step-6": function() {
+				this.unblock();
 				console.log("**********************************************");
 				console.log("* 6. Moving junior node to other tree");
 				console.log("**********************************************");
@@ -143,9 +155,10 @@ if (Meteor.isServer) {
 				Meteor.setTimeout(function() {
 					console.log("**********************************************");
 				}, 500);
-				return "Moved junior node to other tree";
+				return "Moved junior node to other tree (Selling off a Unit)";
 			},
 			"step-7": function() {
+				this.unblock();
 				console.log("**********************************************");
 				console.log("* 7. Removing junior node");
 				console.log("**********************************************");
@@ -153,9 +166,10 @@ if (Meteor.isServer) {
 				Meteor.setTimeout(function() {
 					console.log("**********************************************");
 				}, 500);
-				return "Removed junior node";
+				return "Removed junior node (Re-org in Other Company)";
 			},
 			"step-8": function() {
+				this.unblock();
 				console.log("**********************************************");
 				console.log("* 8. Removing other tree");
 				console.log("**********************************************");
@@ -163,17 +177,18 @@ if (Meteor.isServer) {
 				Meteor.setTimeout(function() {
 					console.log("**********************************************");
 				}, 500);
-				return "Removed other tree";
+				return "Removed other tree (Going out of business?)";
 			},
 			"step-9": function() {
+				this.unblock();
 				console.log("**********************************************");
-				console.log("* 9. Removing property on root");
+				console.log("* 9. Removing one property on root");
 				console.log("**********************************************");
-				itemA.removePropertyForEntity("hello", "cat");
+				itemA.removePropertyForEntity("big-boss-cat", "bossing-kitties-around");
 				Meteor.setTimeout(function() {
 					console.log("**********************************************");
 				}, 500);
-				return "Removed property on root";
+				return "Removed one property on root (big-boss-cat gets removed)";
 			},
 		});
 
