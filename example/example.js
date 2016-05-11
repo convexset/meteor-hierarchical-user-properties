@@ -13,7 +13,7 @@ if (Meteor.isClient) {
 		instance.nodes = new ReactiveVar([]);
 		instance.actions = new ReactiveVar([]);
 
-		function updateNodeData(err, res) {
+		updateNodeData = function updateNodeDataCB(err, res) {
 			var newActions = Tracker.nonreactive(instance.actions.get.bind(instance.actions));
 			newActions.push(res);
 			instance.actions.set(newActions);
@@ -73,6 +73,7 @@ if (Meteor.isServer) {
 
 				itemA.addPropertyForEntity("big-boss-cat", "bossing-kitties-around");
 				itemA.addPropertyForEntity("chair-cat", "bossing-kitties-around");
+				itemA.addPropertyForEntity("cleaner-cat", "clearing-kitty-litter");
 				itemA2.addPropertyForEntity("middle-manager-cat", "bossing-kitties-around");
 
 
