@@ -585,20 +585,22 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 			});
 		}
 
-		(function() {
-			var entries = [
-				[
-					["parentId", 1]
-				],
-				[
-					["upstreamNodeIdList", 1]
-				]
-			];
-			_.forEach(entries, function(entry) {
-				INFO('db.' + HierarchyCollection._name + '.createIndex({' + (entry.map(x => "\"" + x[0] + "\": " + x[1]).join(', ') + '});'));
-				HierarchyCollection._ensureIndex(_.object(entry));
-			});
-		}());
+		if (Meteor.isServer) {
+			(function() {
+				var entries = [
+					[
+						["parentId", 1]
+					],
+					[
+						["upstreamNodeIdList", 1]
+					]
+				];
+				_.forEach(entries, function(entry) {
+					INFO('db.' + HierarchyCollection._name + '.createIndex({' + (entry.map(x => "\"" + x[0] + "\": " + x[1]).join(', ') + '});'));
+					HierarchyCollection._ensureIndex(_.object(entry));
+				});
+			}());
+		}
 	}());
 
 	(function SettingUpPropertyAssignmentCollection() {
@@ -617,26 +619,28 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 		PackageUtilities.addImmutablePropertyFunction(HUP, "getPropertyAssignmentItem", (selector) => !!selector ? PropertyAssignmentCollection.findOne(selector) : PropertyAssignmentCollection.findOne());
 		PackageUtilities.addImmutablePropertyFunction(HUP, "getPropertyAssignmentCursor", (selector) => !!selector ? PropertyAssignmentCollection.find(selector) : PropertyAssignmentCollection.find());
 
-		(function() {
-			var entries = [
-				[
-					["entityName", 1],
-					["property", 1]
-				],
-				[
-					["nodeId", 1],
-					["property", 1],
-				],
-				[
-					["nodeId", 1],
-					["entityName", 1],
-				],
-			];
-			_.forEach(entries, function(entry) {
-				INFO('db.' + PropertyAssignmentCollection._name + '.createIndex({' + (entry.map(x => "\"" + x[0] + "\": " + x[1]).join(', ') + '});'));
-				PropertyAssignmentCollection._ensureIndex(_.object(entry));
-			});
-		}());
+		if (Meteor.isServer) {
+			(function() {
+				var entries = [
+					[
+						["entityName", 1],
+						["property", 1]
+					],
+					[
+						["nodeId", 1],
+						["property", 1],
+					],
+					[
+						["nodeId", 1],
+						["entityName", 1],
+					],
+				];
+				_.forEach(entries, function(entry) {
+					INFO('db.' + PropertyAssignmentCollection._name + '.createIndex({' + (entry.map(x => "\"" + x[0] + "\": " + x[1]).join(', ') + '});'));
+					PropertyAssignmentCollection._ensureIndex(_.object(entry));
+				});
+			}());
+		}
 	}());
 
 	(function SettingUpMaterializedDataCollection() {
@@ -656,28 +660,30 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 		PackageUtilities.addImmutablePropertyFunction(HUP, "getMaterializedDataItem", (selector) => !!selector ? MaterializedDataCollection.findOne(selector) : MaterializedDataCollection.findOne());
 		PackageUtilities.addImmutablePropertyFunction(HUP, "getMaterializedDataCursor", (selector) => !!selector ? MaterializedDataCollection.find(selector) : MaterializedDataCollection.find());
 
-		(function() {
-			var entries = [
-				[
-					["entityName", 1]
-				],
-				[
-					["property", 1]
-				],
-				[
-					["nodeId", 1],
-					["property", 1],
-				],
-				[
-					["nodeId", 1],
-					["entityName", 1],
-				],
-			];
-			_.forEach(entries, function(entry) {
-				INFO('db.' + MaterializedDataCollection._name + '.createIndex({' + (entry.map(x => "\"" + x[0] + "\": " + x[1]).join(', ') + '});'));
-				MaterializedDataCollection._ensureIndex(_.object(entry));
-			});
-		}());
+		if (Meteor.isServer) {
+			(function() {
+				var entries = [
+					[
+						["entityName", 1]
+					],
+					[
+						["property", 1]
+					],
+					[
+						["nodeId", 1],
+						["property", 1],
+					],
+					[
+						["nodeId", 1],
+						["entityName", 1],
+					],
+				];
+				_.forEach(entries, function(entry) {
+					INFO('db.' + MaterializedDataCollection._name + '.createIndex({' + (entry.map(x => "\"" + x[0] + "\": " + x[1]).join(', ') + '});'));
+					MaterializedDataCollection._ensureIndex(_.object(entry));
+				});
+			}());
+		}
 	}());
 
 	PackageUtilities.addImmutablePropertyFunction(HUP, "_buildForest", function buildForest() {
