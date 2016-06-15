@@ -1,6 +1,6 @@
 Package.describe({
 	name: 'convexset:hierarchical-user-properties',
-	version: '0.1.3_3',
+	version: '0.1.3_4',
 	summary: 'Provides support in Meteor for hierarchical user properties',
 	git: 'https://github.com/convexset/meteor-hierarchical-user-properties',
 	documentation: '../../README.md'
@@ -8,7 +8,7 @@ Package.describe({
 
 
 Package.onUse(function(api) {
-	api.versionsFrom('1.2.0.2');
+	api.versionsFrom('1.3.1');
 
 	api.use(
 		[
@@ -16,7 +16,7 @@ Package.onUse(function(api) {
 			'es5-shim',
 			'underscore',
 			'ejson',
-			'convexset:package-utils@0.1.14',
+			'tmeasday:check-npm-versions@0.3.1'
 		]
 	);
 
