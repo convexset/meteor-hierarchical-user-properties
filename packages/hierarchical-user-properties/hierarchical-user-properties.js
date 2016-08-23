@@ -568,10 +568,11 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 			});
 		}
 
-		HierarchyCollection = new Meteor.Collection(hierarchyCollectionName, {
+		HierarchyCollection = new Mongo.Collection(hierarchyCollectionName, {
 			transform: function(doc) {
 				return new HierarchyNode(doc);
-			}
+			},
+			defineMutationMethods: false
 		});
 		PackageUtilities.addPropertyGetter(HUP, "_HierarchyCollection", () => HierarchyCollection);
 		PackageUtilities.addPropertyGetter(HUP, "_HierarchyCursor", () => HierarchyCollection.find());
@@ -620,7 +621,9 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 				property: String,
 			}
 		*/
-		PropertyAssignmentCollection = new Meteor.Collection(propertyAssignmentCollectionName);
+		PropertyAssignmentCollection = new Mongo.Collection(propertyAssignmentCollectionName, {
+			defineMutationMethods: false
+		});
 		PackageUtilities.addPropertyGetter(HUP, "_PropertyAssignmentCollection", () => PropertyAssignmentCollection);
 		PackageUtilities.addPropertyGetter(HUP, "_PropertyAssignmentCursor", () => PropertyAssignmentCollection.find());
 		PackageUtilities.addImmutablePropertyFunction(HUP, "getPropertyAssignmentItem", (selector) => !!selector ? PropertyAssignmentCollection.findOne(selector) : PropertyAssignmentCollection.findOne());
@@ -661,7 +664,9 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 				upstreamDistance: Number
 			}
 		*/
-		MaterializedDataCollection = new Meteor.Collection(materializedDataCollectionName);
+		MaterializedDataCollection = new Mongo.Collection(materializedDataCollectionName, {
+			defineMutationMethods: false
+		});
 		PackageUtilities.addPropertyGetter(HUP, "_MaterializedDataCollection", () => MaterializedDataCollection);
 		PackageUtilities.addPropertyGetter(HUP, "_MaterializedDataCursor", () => MaterializedDataCollection.find());
 		PackageUtilities.addImmutablePropertyFunction(HUP, "getMaterializedDataItem", (selector) => !!selector ? MaterializedDataCollection.findOne(selector) : MaterializedDataCollection.findOne());
