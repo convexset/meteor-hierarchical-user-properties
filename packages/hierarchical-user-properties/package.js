@@ -15,6 +15,7 @@ Package.onUse(function(api) {
 			'ecmascript',
 			'es5-shim',
 			'ejson',
+			'mongo',
 			'tmeasday:check-npm-versions@0.3.1'
 		]
 	);

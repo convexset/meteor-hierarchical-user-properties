@@ -1,4 +1,5 @@
 /* global HierarchicalUserPropertiesFactory: true */
+import { Mongo } from 'meteor/mongo';
 
 import { checkNpmVersions } from 'meteor/tmeasday:check-npm-versions';
 checkNpmVersions({
