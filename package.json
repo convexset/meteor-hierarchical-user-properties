@@ -1,0 +1,27 @@
+{
+  "name": "hierarchical-user-properties",
+  "version": "1.0.0",
+  "description": "The main function of this package is to provide a framework for upward delegation of \"properties\" (e.g.: responsibilities) in hierarchies on the server-side.",
+  "main": "index.js",
+  "directories": {
+    "example": "example"
+  },
+  "dependencies": {
+    "package-utils": "^0.2.1",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/convexset/meteor-hierarchical-user-properties.git"
+  },
+  "author": "Jeremy Chen <convexset@gmail.com> (https://github.com/convexset/)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/convexset/meteor-hierarchical-user-properties/issues"
+  },
+  "homepage": "https://github.com/convexset/meteor-hierarchical-user-properties#readme"
+}

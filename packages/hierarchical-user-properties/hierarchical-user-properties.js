@@ -90,6 +90,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						entityName: entityName,
 						property: property,
 						nodeId: child._id,
+						upstreamNodeIdList: child.upstreamNodeIdList
 					}, {
 						$set: {
 							upstreamDistance: proximity + 1
@@ -109,7 +110,8 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 				property: property
 			}, {
 				$set: {
-					upstreamDistance: upstreamDistance
+					upstreamDistance: upstreamDistance,
+					upstreamNodeIdList: node.upstreamNodeIdList
 				}
 			});
 			node.getChildren().forEach(child => propagateMaterialization_withNoStopChecks(child, entityName, property, upstreamDistance + 1));
@@ -244,9 +246,10 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					var self = this;
 
 					// insert
+					const childUpstreamNodeIdList = [self._id].concat(self.upstreamNodeIdList);
 					var _id = HierarchyCollection.insert({
 						parentId: self._id,
-						upstreamNodeIdList: [self._id].concat(self.upstreamNodeIdList),
+						upstreamNodeIdList: childUpstreamNodeIdList,
 					});
 
 					// if child successfully created...
@@ -259,7 +262,8 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 							delete mpd._id;
 							MaterializedDataCollection.insert(_.extend(mpd, {
 								nodeId: _id,
-								upstreamDistance: mpd.upstreamDistance + 1
+								upstreamDistance: mpd.upstreamDistance + 1,
+								upstreamNodeIdList: childUpstreamNodeIdList
 							}));
 						});
 					} else {
@@ -292,6 +296,22 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 							$set: update
 						});
 						_.extend(item, update);
+
+						MaterializedDataCollection.update({
+							nodeId: item._id
+						}, {
+							$set: {
+								upstreamNodeIdList: new_upstreamNodeIdList
+							}
+						});
+
+						PropertyAssignmentCollection.update({
+							nodeId: item._id
+						}, {
+							$set: {
+								upstreamNodeIdList: new_upstreamNodeIdList
+							}
+						});
 
 						// then clear existing materializations and regenerate
 						// materializations
@@ -351,6 +371,22 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 								upstreamNodeIdList: new_upstreamNodeIdList
 							}
 						});
+
+						MaterializedDataCollection.update({
+							nodeId: item._id
+						}, {
+							$set: {
+								upstreamNodeIdList: new_upstreamNodeIdList
+							}
+						});
+
+						PropertyAssignmentCollection.update({
+							nodeId: item._id
+						}, {
+							$set: {
+								upstreamNodeIdList: new_upstreamNodeIdList
+							}
+						});
 					});
 
 					// detach current node
@@ -398,6 +434,22 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 								upstreamNodeIdList: new_upstreamNodeIdList
 							}
 						});
+
+						MaterializedDataCollection.update({
+							nodeId: item._id
+						}, {
+							$set: {
+								upstreamNodeIdList: new_upstreamNodeIdList
+							}
+						});
+
+						PropertyAssignmentCollection.update({
+							nodeId: item._id
+						}, {
+							$set: {
+								upstreamNodeIdList: new_upstreamNodeIdList
+							}
+						});
 					});
 
 					var update = {
@@ -433,6 +485,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						entityName: entityName,
 						nodeId: self._id,
 						property: property,
+						upstreamNodeIdList: self.upstreamNodeIdList
 					};
 					var curr = HUP.getPropertyAssignmentItem(itemData);
 					if (!!curr) {
@@ -645,6 +698,9 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						["nodeId", 1],
 						["entityName", 1],
 					],
+					[
+						["upstreamNodeIdList", 1]
+					]
 				];
 				_.forEach(entries, function(entry) {
 					INFO('db.' + PropertyAssignmentCollection._name + '.createIndex({' + (entry.map(x => "\"" + x[0] + "\": " + x[1]).join(', ') + '});'));
@@ -690,6 +746,9 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						["nodeId", 1],
 						["entityName", 1],
 					],
+					[
+						["upstreamNodeIdList", 1]
+					]
 				];
 				_.forEach(entries, function(entry) {
 					INFO('db.' + MaterializedDataCollection._name + '.createIndex({' + (entry.map(x => "\"" + x[0] + "\": " + x[1]).join(', ') + '});'));

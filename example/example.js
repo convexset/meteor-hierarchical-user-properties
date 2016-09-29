@@ -30,7 +30,7 @@ if (Meteor.isClient) {
 				Meteor.call("step-" + (x + 1), updateNodeData);
 			}, 5000 + x * 5000);
 		});
-	});
+	});	
 }
 
 if (Meteor.isServer) {
@@ -194,26 +194,33 @@ if (Meteor.isServer) {
 		});
 
 
-		function cbFn(msg) {
-			return function() {
-				console.log('-----\n', msg, arguments, '\n-----');
+		function cbFn(msg, doCheckWithHC = false) {
+			return function(doc) {
+				if (doCheckWithHC) {
+					let hcDoc = HierarchicalUserProperties._HierarchyCollection.findOne({_id: doc.nodeId});
+					const hcUsnList = hcDoc.upstreamNodeIdList.sort();
+					const ownUsnList = (doc.upstreamNodeIdList || ['!!!!!!']).sort();
+					console.log('-----\n', msg, arguments, _.isEqual(hcUsnList, ownUsnList) ? ['Ok.'] : ['****** NOT OK! ******', doc, hcDoc], '\n-----');
+				} else {
+					console.log('-----\n', msg, arguments, '\n-----');
+				}
 			}
 		};
 		Meteor.setTimeout(function() {
 			console.log('Setting Up Observers');
-			HierarchicalUserProperties._HierarchyCursor.observeChanges({
+			HierarchicalUserProperties._HierarchyCursor.observe({
 				added: cbFn('[HierarchyCollection|added]'),
 				changed: cbFn('[HierarchyCollection|changed]'),
 				removed: cbFn('[HierarchyCollection|removed]')
 			});
-			HierarchicalUserProperties._PropertyAssignmentCursor.observeChanges({
-				added: cbFn('[PropertyAssignmentCollection|added]'),
-				changed: cbFn('[PropertyAssignmentCollection|changed]'),
+			HierarchicalUserProperties._PropertyAssignmentCursor.observe({
+				added: cbFn('[PropertyAssignmentCollection|added]', true),
+				changed: cbFn('[PropertyAssignmentCollection|changed]', true),
 				removed: cbFn('[PropertyAssignmentCollection|removed]')
 			});
-			HierarchicalUserProperties._MaterializedDataCursor.observeChanges({
-				added: cbFn('[MaterializedDataCollection|added]'),
-				changed: cbFn('[MaterializedDataCollection|changed]'),
+			HierarchicalUserProperties._MaterializedDataCursor.observe({
+				added: cbFn('[MaterializedDataCollection|added]', true),
+				changed: cbFn('[MaterializedDataCollection|changed]', true),
 				removed: cbFn('[MaterializedDataCollection|removed]')
 			});
 		}, 2000);
