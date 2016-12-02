@@ -1,34 +1,20 @@
 Package.describe({
 	name: 'convexset:hierarchical-user-properties',
-	version: '0.1.3_6',
+	version: '0.1.4',
 	summary: 'Provides support in Meteor for hierarchical user properties',
 	git: 'https://github.com/convexset/meteor-hierarchical-user-properties',
 	documentation: '../../README.md'
 });
 
-
-Package.onUse(function(api) {
-	api.versionsFrom('1.3.1');
-
+Package.onUse(function setupPkg(api) {
 	api.use(
 		[
-			'ecmascript',
-			'es5-shim',
-			'ejson',
-			'mongo',
+			'ecmascript@0.6.1',
+			'mongo@1.1.14',
 			'tmeasday:check-npm-versions@0.3.1'
 		]
 	);
 
 	api.addFiles('hierarchical-user-properties.js');
 	api.export('HierarchicalUserPropertiesFactory');
-});
-
-
-Package.onTest(function(api) {
-	api.use(['tinytest', 'ecmascript', 'es5-shim', 'ejson', ]);
-	api.use('convexset:hierarchical-user-properties');
-	api.addFiles(['tests.js', ]);
-	api.addFiles([], 'server');
-	api.addFiles([], 'client');
 });

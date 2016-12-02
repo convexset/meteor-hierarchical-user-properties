@@ -13,21 +13,20 @@ Note that the usual "top of the pyramid owns everything" functionality can be ac
 
 ## Table of Contents
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
+<!-- MarkdownTOC -->
 
 - [Install](#install)
 - [Usage](#usage)
-  - [Creating Hierarchy Items](#creating-hierarchy-items)
-  - [Getting Items and Cursors](#getting-items-and-cursors)
-    - [The "Hierarchy Collection"](#the-hierarchy-collection)
-    - [The "Property Assignment Collection"](#the-property-assignment-collection)
-    - [The "Materialized Property Data Collection"](#the-materialized-property-data-collection)
-  - [Methods on Items from the "Hierarchy Collection"](#methods-on-items-from-the-hierarchy-collection)
+    - [Creating Hierarchy Items](#creating-hierarchy-items)
+    - [Getting Items and Cursors](#getting-items-and-cursors)
+        - [The "Hierarchy Collection"](#the-hierarchy-collection)
+        - [The "Property Assignment Collection"](#the-property-assignment-collection)
+        - [The "Materialized Property Data Collection"](#the-materialized-property-data-collection)
+    - [Methods on Items from the "Hierarchy Collection"](#methods-on-items-from-the-hierarchy-collection)
 - [Philosophy](#philosophy)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!-- /MarkdownTOC -->
+
 
 ## Install
 
@@ -144,7 +143,7 @@ CRUD Methods:
  - `node.getRoot()`: gets root of the sub-tree that `node` is in
  
 Property Assignment and Materialized Property Data Methods:
- - `node.addPropertyForEntity(entityName, property)`: adds the property assignment of property `property` on `node` for entity with name `entityName`
+ - `node.addPropertyForEntity(entityName, property, metadata)`: adds the property assignment of property `property` on `node` for entity with name `entityName` (`metadata` being an object)
  - `node.removePropertyForEntity(entityName, property)`: removes the property assignment of property `property` on `node` for entity with name `entityName`
  - `node.getPropertyAssignments()`: returns all property assignments on `node`
  - `node.getMaterializedPropertyData()`: returns all implied property information (materialized property data) at `node`

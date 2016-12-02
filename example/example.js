@@ -71,10 +71,10 @@ if (Meteor.isServer) {
 				itemB.createChild();
 				itemB.createChild();
 
-				itemA.addPropertyForEntity("big-boss-cat", "bossing-kitties-around");
-				itemA.addPropertyForEntity("chair-cat", "bossing-kitties-around");
-				itemA.addPropertyForEntity("cleaner-cat", "clearing-kitty-litter");
-				itemA2.addPropertyForEntity("middle-manager-cat", "bossing-kitties-around");
+				itemA.addPropertyForEntity("big-boss-cat", "bossing-kitties-around", {a: "big-boss-cat", b: Math.random()});
+				itemA.addPropertyForEntity("chair-cat", "bossing-kitties-around", {a: "chair-cat", b: Math.random()});
+				itemA.addPropertyForEntity("cleaner-cat", "clearing-kitty-litter", {a: "cleaner-cat", b: Math.random()});
+				itemA2.addPropertyForEntity("middle-manager-cat", "bossing-kitties-around", {a: "middle-manager-cat", b: Math.random()});
 
 
 				return "Refreshed hierarchy. (With cat company leadership!)";
@@ -84,7 +84,7 @@ if (Meteor.isServer) {
 				console.log("**********************************************");
 				console.log("* 1. Adding property on junior node");
 				console.log("**********************************************");
-				itemA13.addPropertyForEntity("some-cat", "some-cat-work");
+				itemA13.addPropertyForEntity("some-cat", "some-cat-work", {a: "some-cat", b: Math.random()});
 				Meteor.setTimeout(function() {
 					console.log("**********************************************");
 				}, 500);
@@ -107,8 +107,8 @@ if (Meteor.isServer) {
 				console.log("**********************************************");
 				console.log("* 3. Adding same property on senior node");
 				console.log("**********************************************");
-				itemA1.addPropertyForEntity("some-cat", "some-cat-work");
-				itemA1.addPropertyForEntity("some-cat", "bossing-kitties-around");
+				itemA1.addPropertyForEntity("some-cat", "some-cat-work", {a: "some-cat", b: Math.random()});
+				itemA1.addPropertyForEntity("some-cat", "bossing-kitties-around", {a: "some-cat", b: Math.random()});
 				Meteor.setTimeout(function() {
 					console.log("**********************************************");
 				}, 500);
@@ -140,8 +140,8 @@ if (Meteor.isServer) {
 				console.log("**********************************************");
 				console.log("* 5. Adding properties to root of other tree");
 				console.log("**********************************************");
-				itemB.addPropertyForEntity("rat", "flee-from-predators");
-				itemB.addPropertyForEntity("bird", "flee-from-predators");
+				itemB.addPropertyForEntity("rat", "flee-from-predators", {a: "rat", b: Math.random()});
+				itemB.addPropertyForEntity("bird", "flee-from-predators", {a: "bird", b: Math.random()});
 				Meteor.setTimeout(function() {
 					console.log("**********************************************");
 				}, 500);

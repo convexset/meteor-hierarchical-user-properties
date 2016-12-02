@@ -75,12 +75,12 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 				upstreamNodeIdList: [HierarchyCollection._id],
 			}
 		*/
-		function materializeForChildrenWithStopsAtPropertyDefinitions(entityName, property, node, proximity) {
+		function materializeForChildrenWithStopsAtPropertyDefinitions(entityName, property, metadata, node, proximity) {
 			node.getChildren().forEach(child => {
 				const _itemData = {
 					entityName: entityName,
 					property: property,
-					nodeId: child._id
+					nodeId: child._id,
 				};
 				const _materializedDataElem = HUP.getMaterializedDataItem(_itemData);
 				if ((!_materializedDataElem) || (_materializedDataElem.upstreamDistance !== 0)) {
@@ -98,28 +98,30 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						upstreamNodeIdList: child.upstreamNodeIdList
 					}, {
 						$set: {
+							metadata: metadata,
 							upstreamDistance: proximity + 1
 						}
 					});
-					materializeForChildrenWithStopsAtPropertyDefinitions(entityName, property, child, proximity + 1);
+					materializeForChildrenWithStopsAtPropertyDefinitions(entityName, property, metadata, child, proximity + 1);
 				} else {
 					LOG('not proceeding with materialization from here', _materializedDataElem);
 				}
 			});
 		}
 
-		function propagateMaterializationWithNoStopChecks(node, entityName, property, upstreamDistance = 0) {
+		function propagateMaterializationWithNoStopChecks(node, entityName, property, metadata, upstreamDistance = 0) {
 			MaterializedDataCollection.upsert({
 				nodeId: node._id,
 				entityName: entityName,
 				property: property
 			}, {
 				$set: {
+					metadata: metadata,
 					upstreamDistance: upstreamDistance,
 					upstreamNodeIdList: node.upstreamNodeIdList
 				}
 			});
-			node.getChildren().forEach(child => propagateMaterializationWithNoStopChecks(child, entityName, property, upstreamDistance + 1));
+			node.getChildren().forEach(child => propagateMaterializationWithNoStopChecks(child, entityName, property, metadata, upstreamDistance + 1));
 		}
 
 
@@ -483,7 +485,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					self.detach(false);
 					self.attachTo(node);
 				},
-				addPropertyForEntity: function addPropertyForEntity(entityName, property) {
+				addPropertyForEntity: function addPropertyForEntity(entityName, property, metadata = {}) {
 					const self = this;
 					LOG(`Adding property ${property} for entity ${entityName} on`, self);
 					const itemData = {
@@ -497,15 +499,16 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						WARN('entity-already-assigned-property-here', self, curr);
 						return;
 					}
-					PropertyAssignmentCollection.insert(itemData);
+					PropertyAssignmentCollection.insert(_.extend({ metadata: metadata }, itemData));
 					MaterializedDataCollection.upsert(itemData, {
 						$set: {
+							metadata: metadata,
 							upstreamDistance: 0
 						}
 					});
 
 					// materialize for children
-					materializeForChildrenWithStopsAtPropertyDefinitions(entityName, property, self, 0);
+					materializeForChildrenWithStopsAtPropertyDefinitions(entityName, property, metadata, self, 0);
 				},
 				removePropertyForEntity: function removePropertyForEntity(entityName, property) {
 					const self = this;
@@ -608,7 +611,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 							MaterializedDataCollection.find({
 								nodeId: self.parentId
 							}).forEach(mpd => {
-								propagateMaterializationWithNoStopChecks(self, mpd.entityName, mpd.property, mpd.upstreamDistance + 1);
+								propagateMaterializationWithNoStopChecks(self, mpd.entityName, mpd.property, mpd.metadata, mpd.upstreamDistance + 1);
 							});
 						} else {
 							LOG('No parent. (No need to consider parent materializations)');
@@ -618,7 +621,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					PropertyAssignmentCollection.find({
 						nodeId: self._id,
 					}).forEach(pa => {
-						propagateMaterializationWithNoStopChecks(self, pa.entityName, pa.property);
+						propagateMaterializationWithNoStopChecks(self, pa.entityName, pa.property, pa.metadata);
 					});
 
 					self.getChildren().forEach(child => child._regenerateMaterializationsRecursive(false));
@@ -722,6 +725,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 				nodeId: HierarchyCollection._id,
 				entityName: String,
 				property: String,
+				metadata: Object,
 				upstreamDistance: Number
 			}
 		*/
