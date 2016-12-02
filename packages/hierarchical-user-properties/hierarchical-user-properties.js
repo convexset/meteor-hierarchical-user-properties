@@ -1,26 +1,27 @@
 /* global HierarchicalUserPropertiesFactory: true */
+import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 
 import { checkNpmVersions } from 'meteor/tmeasday:check-npm-versions';
 checkNpmVersions({
-  'package-utils': '^0.2.1',
-  'underscore' : '^1.8.3',
+	'package-utils': '^0.2.1',
+	'underscore': '^1.8.3',
 });
 const PackageUtilities = require('package-utils');
 const _ = require('underscore');
 
 HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
-	name = "Properties",
-	hierarchyCollectionName = "convexset_HierarchicalUserProperties_Hierarchies",
-	propertyAssignmentCollectionName = "convexset_HierarchicalUserProperties_PropertyAssignments",
-	materializedDataCollectionName = "convexset_HierarchicalUserProperties_MaterializedData",
+	name = 'Properties',
+	hierarchyCollectionName = 'convexset_HierarchicalUserProperties_Hierarchies',
+	propertyAssignmentCollectionName = 'convexset_HierarchicalUserProperties_PropertyAssignments',
+	materializedDataCollectionName = 'convexset_HierarchicalUserProperties_MaterializedData',
 } = {}) {
-	var _hup = function HierarchicalUserProperties() {};
-	var HUP = new _hup();
+	const _hup = function HierarchicalUserProperties() {};
+	const HUP = new _hup();
 
 	// Debug Mode
-	var _debugMode = false;
-	PackageUtilities.addPropertyGetterAndSetter(HUP, "DEBUG_MODE", {
+	let _debugMode = false;
+	PackageUtilities.addPropertyGetterAndSetter(HUP, 'DEBUG_MODE', {
 		get: () => _debugMode,
 		set: function(value) {
 			_debugMode = !!value;
@@ -30,32 +31,36 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 
 	function LOG(...args) {
 		if (_debugMode) {
-			console.log.apply(console, ['[HierarchicalUserProperties|' + name + ']'].concat(args));
+			// eslint-disable-next-line no-console
+			console.log(`[HierarchicalUserProperties|${name}]`, ...args);
 		}
 	}
 
 	function INFO(...args) {
 		if (_debugMode) {
-			console.info.apply(console, ['[HierarchicalUserProperties|' + name + ']'].concat(args));
+			// eslint-disable-next-line no-console
+			console.info(`[HierarchicalUserProperties|${name}]`, ...args);
 		}
 	}
 
 	function WARN(...args) {
 		if (_debugMode) {
-			console.warn.apply(console, ['[HierarchicalUserProperties|' + name + ']'].concat(args));
+			// eslint-disable-next-line no-console
+			console.warn(`[HierarchicalUserProperties|${name}]`, ...args);
 		}
 	}
 
 	function ERROR(...args) {
 		if (_debugMode) {
-			console.error.apply(console, ['[HierarchicalUserProperties|' + name + ']'].concat(args));
+			// eslint-disable-next-line no-console
+			console.error(`[HierarchicalUserProperties|${name}]`, ...args);
 		}
 	}
 
 	// Core Collections
-	var HierarchyCollection;
-	var PropertyAssignmentCollection;
-	var MaterializedDataCollection;
+	let HierarchyCollection;
+	let PropertyAssignmentCollection;
+	let MaterializedDataCollection;
 
 	(function SettingUpHierarchyNode() {
 		LOG('Setting up HierarchyNode...');
@@ -70,20 +75,20 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 				upstreamNodeIdList: [HierarchyCollection._id],
 			}
 		*/
-		function materializeForChildren_withStopsAtPropertyDefinitions(entityName, property, node, proximity) {
-			node.getChildren().forEach(function(child) {
-				var _itemData = {
+		function materializeForChildrenWithStopsAtPropertyDefinitions(entityName, property, node, proximity) {
+			node.getChildren().forEach(child => {
+				const _itemData = {
 					entityName: entityName,
 					property: property,
 					nodeId: child._id
 				};
-				var _materializedDataElem = HUP.getMaterializedDataItem(_itemData);
+				const _materializedDataElem = HUP.getMaterializedDataItem(_itemData);
 				if ((!_materializedDataElem) || (_materializedDataElem.upstreamDistance !== 0)) {
 					if (!_materializedDataElem) {
-						LOG("inserting materialized property data record because no data at", _itemData);
+						LOG('inserting materialized property data record because no data at', _itemData);
 					} else {
-						LOG("updating existing materialized property data", _materializedDataElem);
-						LOG("new upstreamDistance:", proximity + 1);
+						LOG('updating existing materialized property data', _materializedDataElem);
+						LOG('new upstreamDistance:', proximity + 1);
 					}
 
 					MaterializedDataCollection.upsert({
@@ -96,14 +101,14 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 							upstreamDistance: proximity + 1
 						}
 					});
-					materializeForChildren_withStopsAtPropertyDefinitions(entityName, property, child, proximity + 1);
+					materializeForChildrenWithStopsAtPropertyDefinitions(entityName, property, child, proximity + 1);
 				} else {
-					LOG("not proceeding with materialization from here", _materializedDataElem);
+					LOG('not proceeding with materialization from here', _materializedDataElem);
 				}
 			});
 		}
 
-		function propagateMaterialization_withNoStopChecks(node, entityName, property, upstreamDistance = 0) {
+		function propagateMaterializationWithNoStopChecks(node, entityName, property, upstreamDistance = 0) {
 			MaterializedDataCollection.upsert({
 				nodeId: node._id,
 				entityName: entityName,
@@ -114,7 +119,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					upstreamNodeIdList: node.upstreamNodeIdList
 				}
 			});
-			node.getChildren().forEach(child => propagateMaterialization_withNoStopChecks(child, entityName, property, upstreamDistance + 1));
+			node.getChildren().forEach(child => propagateMaterializationWithNoStopChecks(child, entityName, property, upstreamDistance + 1));
 		}
 
 
@@ -139,34 +144,34 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					nodeId: this._id,
 				}).fetch();
 			},
-			getPropertiesForEntity_OriginalAssignments: function getPropertiesForEntity_OriginalAssignments(entityName) {
+			getPropertiesForEntity_OriginalAssignments: function getPropertiesForEntityOriginalAssignments(entityName) {
 				return PropertyAssignmentCollection.find({
 					nodeId: this._id,
 					entityName: entityName
 				}).map(pa => pa.property);
 			},
-			getEntitiesWithProperty_OriginalAssignments: function getEntitiesWithProperty_OriginalAssignments(property) {
+			getEntitiesWithProperty_OriginalAssignments: function getEntitiesWithPropertyOriginalAssignments(property) {
 				return PropertyAssignmentCollection.find({
 					nodeId: this._id,
 					property: property
 				}).map(pa => pa.entityName);
 			},
 			getPropertiesForEntity: function getPropertiesForEntity(entityName) {
-				var ret = {};
+				const ret = {};
 				MaterializedDataCollection.find({
 					nodeId: this._id,
 					entityName: entityName
-				}).forEach(function(mpd) {
+				}).forEach(mpd => {
 					ret[mpd.property] = mpd.upstreamDistance;
 				});
 				return ret;
 			},
 			getEntitiesWithProperty: function getEntitiesWithProperty(property) {
-				var ret = {};
+				const ret = {};
 				MaterializedDataCollection.find({
 					nodeId: this._id,
 					property: property
-				}).forEach(function(mpd) {
+				}).forEach(mpd => {
 					ret[mpd.entityName] = mpd.upstreamDistance;
 				});
 				return ret;
@@ -183,7 +188,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 				});
 			},
 			_populateSelf: function _populateSelf() {
-				var self = this;
+				const self = this;
 
 				self.propertyAssignments = {
 					byEntityName: {},
@@ -196,7 +201,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 
 				PropertyAssignmentCollection.find({
 					nodeId: self._id
-				}).forEach(function(pa) {
+				}).forEach(pa => {
 					if (self.propertyAssignments.byEntityName.hasOwnProperty(pa.entityName)) {
 						self.propertyAssignments.byEntityName[pa.entityName].push(pa.property);
 					} else {
@@ -212,7 +217,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 
 				MaterializedDataCollection.find({
 					nodeId: self._id
-				}).forEach(function(mpd) {
+				}).forEach(mpd => {
 					if (self.materializedPropertyData.byEntityName.hasOwnProperty(mpd.entityName)) {
 						self.materializedPropertyData.byEntityName[mpd.entityName][mpd.property] = mpd.upstreamDistance;
 					} else {
@@ -243,11 +248,11 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 		if (Meteor.isServer) {
 			_.extend(HierarchyNode.prototype, {
 				createChild: function createChild() {
-					var self = this;
+					const self = this;
 
 					// insert
 					const childUpstreamNodeIdList = [self._id].concat(self.upstreamNodeIdList);
-					var _id = HierarchyCollection.insert({
+					const _id = HierarchyCollection.insert({
 						parentId: self._id,
 						upstreamNodeIdList: childUpstreamNodeIdList,
 					});
@@ -258,7 +263,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						// and add them to child (with appropriate proximity)
 						MaterializedDataCollection.find({
 							nodeId: self._id
-						}).forEach(function(mpd) {
+						}).forEach(mpd => {
 							delete mpd._id;
 							MaterializedDataCollection.insert(_.extend(mpd, {
 								nodeId: _id,
@@ -267,28 +272,28 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 							}));
 						});
 					} else {
-						ERROR("unable to create child at", self);
-						throw new Meteor.Error("unable-to-create-child");
+						ERROR('unable to create child at', self);
+						throw new Meteor.Error('unable-to-create-child');
 					}
 
-					var item = HierarchyCollection.findOne({
+					const item = HierarchyCollection.findOne({
 						_id: _id
 					});
-					LOG("[createChild] parent:", self, "; child: ", item);
+					LOG('[createChild] parent:', self, '; child: ', item);
 					return item;
 				},
 				removeNode: function removeNode() {
-					var self = this;
-					LOG("Removing node:", self._id);
+					const self = this;
+					LOG('Removing node:', self._id);
 
 					// for all child nodes...
-					self.getChildren().forEach(function(item) {
+					self.getChildren().forEach(item => {
 						// ... remove current node from upstreamNodeIdList
 						// and update parent to current node's parent
-						var new_upstreamNodeIdList = item.upstreamNodeIdList.filter(x => x !== self._id);
-						var update = {
+						const newUpstreamNodeIdList = item.upstreamNodeIdList.filter(x => x !== self._id);
+						const update = {
 							parentId: self.parentId,
-							upstreamNodeIdList: new_upstreamNodeIdList
+							upstreamNodeIdList: newUpstreamNodeIdList
 						};
 						HierarchyCollection.update({
 							_id: item._id
@@ -301,7 +306,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 							nodeId: item._id
 						}, {
 							$set: {
-								upstreamNodeIdList: new_upstreamNodeIdList
+								upstreamNodeIdList: newUpstreamNodeIdList
 							}
 						});
 
@@ -309,13 +314,13 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 							nodeId: item._id
 						}, {
 							$set: {
-								upstreamNodeIdList: new_upstreamNodeIdList
+								upstreamNodeIdList: newUpstreamNodeIdList
 							}
 						});
 
 						// then clear existing materializations and regenerate
 						// materializations
-						LOG("Clearing and then regenerating materializations...");
+						LOG('Clearing and then regenerating materializations...');
 						item._clearMaterializationRecursive();
 						item._regenerateMaterializationsRecursive();
 					});
@@ -333,11 +338,11 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					});
 				},
 				removeSubTree: function removeSubTree() {
-					LOG("Removing node rooting sub-tree:", this._id);
-					var idsToRemove = HierarchyCollection.find({
+					LOG('Removing node rooting sub-tree:', this._id);
+					let idsToRemove = HierarchyCollection.find({
 						upstreamNodeIdList: this._id
 					}).map(x => x._id);
-					LOG("Downstream nodes to remove:", idsToRemove);
+					LOG('Downstream nodes to remove:', idsToRemove);
 					idsToRemove = idsToRemove.concat([this._id]);
 
 					// easy remove job... just nuke everything
@@ -358,17 +363,17 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					});
 				},
 				detach: function detach(_doClearAndRegenerateMaterialization = true) {
-					LOG("Detaching current node from parent:", this._id);
-					var self = this;
-					self.getAllDescendants().forEach(function(item) {
+					LOG('Detaching current node from parent:', this._id);
+					const self = this;
+					self.getAllDescendants().forEach(item => {
 						// remove upstreamNodeIdList ancestors of current node
 						// in descendants of current node
-						var new_upstreamNodeIdList = item.upstreamNodeIdList.filter(x => self.upstreamNodeIdList.indexOf(x) === -1);
+						const newUpstreamNodeIdList = item.upstreamNodeIdList.filter(x => self.upstreamNodeIdList.indexOf(x) === -1);
 						HierarchyCollection.update({
 							_id: item._id
 						}, {
 							$set: {
-								upstreamNodeIdList: new_upstreamNodeIdList
+								upstreamNodeIdList: newUpstreamNodeIdList
 							}
 						});
 
@@ -376,7 +381,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 							nodeId: item._id
 						}, {
 							$set: {
-								upstreamNodeIdList: new_upstreamNodeIdList
+								upstreamNodeIdList: newUpstreamNodeIdList
 							}
 						});
 
@@ -384,13 +389,13 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 							nodeId: item._id
 						}, {
 							$set: {
-								upstreamNodeIdList: new_upstreamNodeIdList
+								upstreamNodeIdList: newUpstreamNodeIdList
 							}
 						});
 					});
 
 					// detach current node
-					var update = {
+					const update = {
 						parentId: null,
 						upstreamNodeIdList: [],
 					};
@@ -402,18 +407,18 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					});
 
 					if (_doClearAndRegenerateMaterialization) {
-						LOG("Clearing and then regenerating materializations...");
+						LOG('Clearing and then regenerating materializations...');
 						self._clearMaterializationRecursive();
 						self._regenerateMaterializationsRecursive();
 					}
 				},
 				attachTo: function attachTo(node) {
+					const self = this;
 					if (node === self) {
-						ERROR("Cannot attach to self", self);
-						throw new Meteor.Error("cannot-attach-to-self");
+						ERROR('Cannot attach to self', self);
+						throw new Meteor.Error('cannot-attach-to-self');
 					}
-					LOG("Attaching current node (" + this._id + ") to", node);
-					var self = this;
+					LOG(`Attaching current node (${this._id}) to`, node);
 					if (!!self.parentId) {
 						ERROR('current-node-already-attached', self);
 						throw new Meteor.Error('current-node-already-attached');
@@ -423,15 +428,15 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						throw new Meteor.Error('invalid-target');
 					}
 
-					self.getAllDescendants().forEach(function(item) {
+					self.getAllDescendants().forEach(item => {
 						// update upstreamNodeIdList to include node and its
 						// ancestors
-						var new_upstreamNodeIdList = item.upstreamNodeIdList.concat([node._id], node.upstreamNodeIdList);
+						const newUpstreamNodeIdList = item.upstreamNodeIdList.concat([node._id], node.upstreamNodeIdList);
 						HierarchyCollection.update({
 							_id: item._id
 						}, {
 							$set: {
-								upstreamNodeIdList: new_upstreamNodeIdList
+								upstreamNodeIdList: newUpstreamNodeIdList
 							}
 						});
 
@@ -439,7 +444,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 							nodeId: item._id
 						}, {
 							$set: {
-								upstreamNodeIdList: new_upstreamNodeIdList
+								upstreamNodeIdList: newUpstreamNodeIdList
 							}
 						});
 
@@ -447,12 +452,12 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 							nodeId: item._id
 						}, {
 							$set: {
-								upstreamNodeIdList: new_upstreamNodeIdList
+								upstreamNodeIdList: newUpstreamNodeIdList
 							}
 						});
 					});
 
-					var update = {
+					const update = {
 						parentId: node._id,
 						upstreamNodeIdList: self.upstreamNodeIdList.concat([node._id], node.upstreamNodeIdList)
 					};
@@ -464,30 +469,30 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					});
 
 					// Materialize based on parent
-					LOG("Clearing and then regenerating materializations...");
+					LOG('Clearing and then regenerating materializations...');
 					self._clearMaterializationRecursive();
 					self._regenerateMaterializationsRecursive();
 				},
 				moveTo: function moveTo(node) {
-					LOG("Moving current node (" + this._id + ") to child list of", node);
-					var self = this;
+					LOG(`Moving current node (${this._id}) to child list of`, node);
+					const self = this;
 					if (node === self) {
-						ERROR("Cannot attach to self", self);
-						throw new Meteor.Error("cannot-attach-to-self");
+						ERROR('Cannot attach to self', self);
+						throw new Meteor.Error('cannot-attach-to-self');
 					}
 					self.detach(false);
 					self.attachTo(node);
 				},
 				addPropertyForEntity: function addPropertyForEntity(entityName, property) {
-					var self = this;
-					LOG("Adding property " + property + " for entity " + entityName + " on", self);
-					var itemData = {
+					const self = this;
+					LOG(`Adding property ${property} for entity ${entityName} on`, self);
+					const itemData = {
 						entityName: entityName,
 						nodeId: self._id,
 						property: property,
 						upstreamNodeIdList: self.upstreamNodeIdList
 					};
-					var curr = HUP.getPropertyAssignmentItem(itemData);
+					const curr = HUP.getPropertyAssignmentItem(itemData);
 					if (!!curr) {
 						WARN('entity-already-assigned-property-here', self, curr);
 						return;
@@ -500,36 +505,36 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					});
 
 					// materialize for children
-					materializeForChildren_withStopsAtPropertyDefinitions(entityName, property, self, 0);
+					materializeForChildrenWithStopsAtPropertyDefinitions(entityName, property, self, 0);
 				},
 				removePropertyForEntity: function removePropertyForEntity(entityName, property) {
-					var self = this;
-					LOG("Removing property " + property + " for entity " + entityName + " on", self);
-					var itemData = {
+					const self = this;
+					LOG(`Removing property ${property} for entity ${entityName} on`, self);
+					const itemData = {
 						entityName: entityName,
 						nodeId: self._id,
 						property: property,
 					};
-					var curr = HUP.getPropertyAssignmentItem(itemData);
+					const curr = HUP.getPropertyAssignmentItem(itemData);
 					if (!curr) {
 						WARN('no-such-property-for-entity-here', self, itemData);
 						return;
 					} else {
-						LOG("removing property assignment item", curr);
+						LOG('removing property assignment item', curr);
 						PropertyAssignmentCollection.remove(curr);
 					}
 
 					// check parent for the same materialized property data
-					var parentMPD = HUP.getMaterializedDataItem(_.extend({}, itemData, {
+					const parentMPD = HUP.getMaterializedDataItem(_.extend({}, itemData, {
 						nodeId: self.parentId
 					}));
-					LOG("checking parent for the same materialized property data... result:", parentMPD);
+					LOG('checking parent for the same materialized property data... result:', parentMPD);
 
 					function recursiveMPDUpdate(node, upstreamDistance) {
 						// deal with self, then children
-						if (typeof upstreamDistance === "undefined") {
+						if (typeof upstreamDistance === 'undefined') {
 							// remove mode
-							LOG("recursive update [entityName=" + entityName + ", property=" + property + "] (remove mode) at", node);
+							LOG(`recursive update [entityName=${entityName}, property=${property}] (remove mode) at`, node);
 							MaterializedDataCollection.remove({
 								entityName: entityName,
 								nodeId: node._id,
@@ -537,7 +542,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 							});
 						} else {
 							// update mode
-							LOG("recursive update [entityName=" + entityName + ", property=" + property + "] (update mode) with upstreamDistance=" + upstreamDistance + " at", node);
+							LOG(`recursive update [entityName=${entityName}, property=${property}] (update mode) with upstreamDistance=${upstreamDistance} at`, node);
 							MaterializedDataCollection.update({
 								entityName: entityName,
 								nodeId: node._id,
@@ -549,17 +554,17 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 							});
 						}
 
-						node.getChildren().forEach(function(child) {
-							var _itemData = {
+						node.getChildren().forEach(child => {
+							const _itemData = {
 								entityName: entityName,
 								property: property,
 								nodeId: child._id
 							};
-							var _materializedDataElem = HUP.getMaterializedDataItem(_itemData);
+							const _materializedDataElem = HUP.getMaterializedDataItem(_itemData);
 
 							if (_materializedDataElem.upstreamDistance !== 0) {
 								// only remove/update if upstreamDistance !== 0
-								if (typeof upstreamDistance === "undefined") {
+								if (typeof upstreamDistance === 'undefined') {
 									// remove mode
 									recursiveMPDUpdate(child);
 								} else {
@@ -567,54 +572,53 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 									recursiveMPDUpdate(child, upstreamDistance + 1);
 								}
 							} else {
-								LOG("recursive update not proceeding (since mpd.upstreamDistance=0) at", child);
+								LOG('recursive update not proceeding (since mpd.upstreamDistance=0) at', child);
 							}
 						});
 					}
 
 					if (!!parentMPD) {
 						// if parent has some materialized property data, update materialization on subtree, stopping at those with upstreamDistance = 0
-						LOG("parent has relevant MPD with proximity " + parentMPD.upstreamDistance);
+						LOG(`parent has relevant MPD with proximity ${parentMPD.upstreamDistance}`);
 
 						// recursiveMPDUpdate in update mode
 						recursiveMPDUpdate(self, parentMPD.upstreamDistance + 1);
 					} else {
 						// if parent does not have that, remove traces on subtree, stopping at those with upstreamDistance = 0
-						LOG("parent does not have relevant MPD");
+						LOG('parent does not have relevant MPD');
 
 						// recursiveMPDUpdate in remove mode
 						recursiveMPDUpdate(self);
 					}
 				},
 				_clearMaterializationRecursive: function _clearMaterializationRecursive() {
-					var self = this;
+					const self = this;
 					MaterializedDataCollection.remove({
 						nodeId: self._id,
 					});
 					self.getChildren().forEach(child => child._clearMaterializationRecursive());
 				},
 				_regenerateMaterializationsRecursive: function _regenerateMaterializationsRecursive(initialCall = true) {
-					// assumption: 
-					var self = this;
+					const self = this;
 
 					if (initialCall) {
-						LOG("_regenerateMaterializationsRecursive initial call");
+						LOG('_regenerateMaterializationsRecursive initial call');
 						if (!!self.parentId) {
-							LOG("Parent exists. Checking parent materializations...");
+							LOG('Parent exists. Checking parent materializations...');
 							MaterializedDataCollection.find({
 								nodeId: self.parentId
-							}).forEach(function(mpd) {
-								propagateMaterialization_withNoStopChecks(self, mpd.entityName, mpd.property, mpd.upstreamDistance + 1);
+							}).forEach(mpd => {
+								propagateMaterializationWithNoStopChecks(self, mpd.entityName, mpd.property, mpd.upstreamDistance + 1);
 							});
 						} else {
-							LOG("No parent. (No need to consider parent materializations)");
+							LOG('No parent. (No need to consider parent materializations)');
 						}
 					}
 
 					PropertyAssignmentCollection.find({
 						nodeId: self._id,
-					}).forEach(function(pa) {
-						propagateMaterialization_withNoStopChecks(self, pa.entityName, pa.property);
+					}).forEach(pa => {
+						propagateMaterializationWithNoStopChecks(self, pa.entityName, pa.property);
 					});
 
 					self.getChildren().forEach(child => child._regenerateMaterializationsRecursive(false));
@@ -628,37 +632,37 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 			},
 			defineMutationMethods: false
 		});
-		PackageUtilities.addPropertyGetter(HUP, "_HierarchyCollection", () => HierarchyCollection);
-		PackageUtilities.addPropertyGetter(HUP, "_HierarchyCursor", () => HierarchyCollection.find());
-		PackageUtilities.addImmutablePropertyFunction(HUP, "getHierarchyItem", (selector) => !!selector ? HierarchyCollection.findOne(selector) : HierarchyCollection.findOne());
-		PackageUtilities.addImmutablePropertyFunction(HUP, "getHierarchyCursor", (selector) => !!selector ? HierarchyCollection.find(selector) : HierarchyCollection.find());
+		PackageUtilities.addPropertyGetter(HUP, '_HierarchyCollection', () => HierarchyCollection);
+		PackageUtilities.addPropertyGetter(HUP, '_HierarchyCursor', () => HierarchyCollection.find());
+		PackageUtilities.addImmutablePropertyFunction(HUP, 'getHierarchyItem', (selector) => !!selector ? HierarchyCollection.findOne(selector) : HierarchyCollection.findOne());
+		PackageUtilities.addImmutablePropertyFunction(HUP, 'getHierarchyCursor', (selector) => !!selector ? HierarchyCollection.find(selector) : HierarchyCollection.find());
 
 		if (Meteor.isServer) {
-			PackageUtilities.addImmutablePropertyFunction(HUP, "createHierarchyItem", function createHierarchyItem() {
-				var _id = HierarchyCollection.insert({
+			PackageUtilities.addImmutablePropertyFunction(HUP, 'createHierarchyItem', function createHierarchyItem() {
+				const _id = HierarchyCollection.insert({
 					parentId: null,
 					upstreamNodeIdList: [],
 				});
-				var item = HierarchyCollection.findOne({
+				const item = HierarchyCollection.findOne({
 					_id: _id
 				});
-				LOG("[createHierarchyItem]", item);
+				LOG('[createHierarchyItem]', item);
 				return item;
 			});
 		}
 
 		if (Meteor.isServer) {
 			(function() {
-				var entries = [
+				const entries = [
 					[
-						["parentId", 1]
+						['parentId', 1]
 					],
 					[
-						["upstreamNodeIdList", 1]
+						['upstreamNodeIdList', 1]
 					]
 				];
-				_.forEach(entries, function(entry) {
-					INFO('db.' + HierarchyCollection._name + '.createIndex({' + (entry.map(x => "\"" + x[0] + "\": " + x[1]).join(', ') + '});'));
+				_.forEach(entries, entry => {
+					INFO(`db.${HierarchyCollection._name}.createIndex({${entry.map(x => `'${x[0]}': ${x[1]}`).join(', ')}});`);
 					HierarchyCollection._ensureIndex(_.object(entry));
 				});
 			}());
@@ -678,32 +682,32 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 		PropertyAssignmentCollection = new Mongo.Collection(propertyAssignmentCollectionName, {
 			defineMutationMethods: false
 		});
-		PackageUtilities.addPropertyGetter(HUP, "_PropertyAssignmentCollection", () => PropertyAssignmentCollection);
-		PackageUtilities.addPropertyGetter(HUP, "_PropertyAssignmentCursor", () => PropertyAssignmentCollection.find());
-		PackageUtilities.addImmutablePropertyFunction(HUP, "getPropertyAssignmentItem", (selector) => !!selector ? PropertyAssignmentCollection.findOne(selector) : PropertyAssignmentCollection.findOne());
-		PackageUtilities.addImmutablePropertyFunction(HUP, "getPropertyAssignmentCursor", (selector) => !!selector ? PropertyAssignmentCollection.find(selector) : PropertyAssignmentCollection.find());
+		PackageUtilities.addPropertyGetter(HUP, '_PropertyAssignmentCollection', () => PropertyAssignmentCollection);
+		PackageUtilities.addPropertyGetter(HUP, '_PropertyAssignmentCursor', () => PropertyAssignmentCollection.find());
+		PackageUtilities.addImmutablePropertyFunction(HUP, 'getPropertyAssignmentItem', (selector) => !!selector ? PropertyAssignmentCollection.findOne(selector) : PropertyAssignmentCollection.findOne());
+		PackageUtilities.addImmutablePropertyFunction(HUP, 'getPropertyAssignmentCursor', (selector) => !!selector ? PropertyAssignmentCollection.find(selector) : PropertyAssignmentCollection.find());
 
 		if (Meteor.isServer) {
 			(function() {
-				var entries = [
+				const entries = [
 					[
-						["entityName", 1],
-						["property", 1]
+						['entityName', 1],
+						['property', 1]
 					],
 					[
-						["nodeId", 1],
-						["property", 1],
+						['nodeId', 1],
+						['property', 1],
 					],
 					[
-						["nodeId", 1],
-						["entityName", 1],
+						['nodeId', 1],
+						['entityName', 1],
 					],
 					[
-						["upstreamNodeIdList", 1]
+						['upstreamNodeIdList', 1]
 					]
 				];
-				_.forEach(entries, function(entry) {
-					INFO('db.' + PropertyAssignmentCollection._name + '.createIndex({' + (entry.map(x => "\"" + x[0] + "\": " + x[1]).join(', ') + '});'));
+				_.forEach(entries, entry => {
+					INFO(`db.${PropertyAssignmentCollection._name}.createIndex({${entry.map(x => `'${x[0]}': ${x[1]}`).join(', ')}});`);
 					PropertyAssignmentCollection._ensureIndex(_.object(entry));
 				});
 			}());
@@ -724,42 +728,42 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 		MaterializedDataCollection = new Mongo.Collection(materializedDataCollectionName, {
 			defineMutationMethods: false
 		});
-		PackageUtilities.addPropertyGetter(HUP, "_MaterializedDataCollection", () => MaterializedDataCollection);
-		PackageUtilities.addPropertyGetter(HUP, "_MaterializedDataCursor", () => MaterializedDataCollection.find());
-		PackageUtilities.addImmutablePropertyFunction(HUP, "getMaterializedDataItem", (selector) => !!selector ? MaterializedDataCollection.findOne(selector) : MaterializedDataCollection.findOne());
-		PackageUtilities.addImmutablePropertyFunction(HUP, "getMaterializedDataCursor", (selector) => !!selector ? MaterializedDataCollection.find(selector) : MaterializedDataCollection.find());
+		PackageUtilities.addPropertyGetter(HUP, '_MaterializedDataCollection', () => MaterializedDataCollection);
+		PackageUtilities.addPropertyGetter(HUP, '_MaterializedDataCursor', () => MaterializedDataCollection.find());
+		PackageUtilities.addImmutablePropertyFunction(HUP, 'getMaterializedDataItem', (selector) => !!selector ? MaterializedDataCollection.findOne(selector) : MaterializedDataCollection.findOne());
+		PackageUtilities.addImmutablePropertyFunction(HUP, 'getMaterializedDataCursor', (selector) => !!selector ? MaterializedDataCollection.find(selector) : MaterializedDataCollection.find());
 
 		if (Meteor.isServer) {
 			(function() {
-				var entries = [
+				const entries = [
 					[
-						["entityName", 1]
+						['entityName', 1]
 					],
 					[
-						["property", 1]
+						['property', 1]
 					],
 					[
-						["nodeId", 1],
-						["property", 1],
+						['nodeId', 1],
+						['property', 1],
 					],
 					[
-						["nodeId", 1],
-						["entityName", 1],
+						['nodeId', 1],
+						['entityName', 1],
 					],
 					[
-						["upstreamNodeIdList", 1]
+						['upstreamNodeIdList', 1]
 					]
 				];
-				_.forEach(entries, function(entry) {
-					INFO('db.' + MaterializedDataCollection._name + '.createIndex({' + (entry.map(x => "\"" + x[0] + "\": " + x[1]).join(', ') + '});'));
+				_.forEach(entries, entry => {
+					INFO(`db.${MaterializedDataCollection._name}.createIndex({${entry.map(x => `'${x[0]}': ${x[1]}`).join(', ')}});`);
 					MaterializedDataCollection._ensureIndex(_.object(entry));
 				});
 			}());
 		}
 	}());
 
-	PackageUtilities.addImmutablePropertyFunction(HUP, "_buildForest", function buildForest() {
-		var roots = HierarchyCollection.find({
+	PackageUtilities.addImmutablePropertyFunction(HUP, '_buildForest', function buildForest() {
+		const roots = HierarchyCollection.find({
 			parentId: null
 		}).fetch();
 		roots.forEach(node => node._buildTree());
