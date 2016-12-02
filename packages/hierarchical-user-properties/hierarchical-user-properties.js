@@ -58,7 +58,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 	}
 
 	// Core Collections
-	let HierarchyCollection;
+	let HierarchyCollection, getHierarchyCollection;
 	let PropertyAssignmentCollection;
 	let MaterializedDataCollection;
 
@@ -71,8 +71,8 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 		/*
 			HierarchyCollection:
 			Schema: {
-				parentId: HierarchyCollection._id,
-				upstreamNodeIdList: [HierarchyCollection._id],
+				parentId: HierarchyCollectionId,
+				upstreamNodeIdList: [HierarchyCollectionId],
 			}
 		*/
 		function materializeForChildrenWithStopsAtPropertyDefinitions(entityName, property, metadata, node, proximity) {
@@ -127,12 +127,12 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 
 		HierarchyNode.prototype = {
 			getChildren: function getChildren() {
-				return HierarchyCollection.find({
+				return getHierarchyCollection().find({
 					parentId: this._id,
 				}).fetch();
 			},
 			getAllDescendants: function getAllDescendants() {
-				return HierarchyCollection.find({
+				return getHierarchyCollection().find({
 					upstreamNodeIdList: this._id,
 				}).fetch();
 			},
@@ -182,7 +182,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 				if (this.parentId === null) {
 					return this;
 				}
-				return HierarchyCollection.findOne({
+				return getHierarchyCollection().findOne({
 					_id: {
 						$in: this.upstreamNodeIdList
 					},
@@ -249,15 +249,15 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 
 		if (Meteor.isServer) {
 			_.extend(HierarchyNode.prototype, {
-				createChild: function createChild() {
+				createChild: function createChild(data = {}) {
 					const self = this;
 
 					// insert
 					const childUpstreamNodeIdList = [self._id].concat(self.upstreamNodeIdList);
-					const _id = HierarchyCollection.insert({
+					const _id = getHierarchyCollection().insert(_.extend({}, data, {
 						parentId: self._id,
 						upstreamNodeIdList: childUpstreamNodeIdList,
-					});
+					}));
 
 					// if child successfully created...
 					if (!!_id) {
@@ -278,7 +278,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						throw new Meteor.Error('unable-to-create-child');
 					}
 
-					const item = HierarchyCollection.findOne({
+					const item = getHierarchyCollection().findOne({
 						_id: _id
 					});
 					LOG('[createChild] parent:', self, '; child: ', item);
@@ -297,7 +297,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 							parentId: self.parentId,
 							upstreamNodeIdList: newUpstreamNodeIdList
 						};
-						HierarchyCollection.update({
+						getHierarchyCollection().update({
 							_id: item._id
 						}, {
 							$set: update
@@ -335,13 +335,13 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					MaterializedDataCollection.remove({
 						nodeId: this._id
 					});
-					HierarchyCollection.remove({
+					getHierarchyCollection().remove({
 						_id: this._id
 					});
 				},
 				removeSubTree: function removeSubTree() {
 					LOG('Removing node rooting sub-tree:', this._id);
-					let idsToRemove = HierarchyCollection.find({
+					let idsToRemove = getHierarchyCollection().find({
 						upstreamNodeIdList: this._id
 					}).map(x => x._id);
 					LOG('Downstream nodes to remove:', idsToRemove);
@@ -358,7 +358,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 							$in: idsToRemove
 						}
 					});
-					HierarchyCollection.remove({
+					getHierarchyCollection().remove({
 						_id: {
 							$in: idsToRemove
 						}
@@ -371,7 +371,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						// remove upstreamNodeIdList ancestors of current node
 						// in descendants of current node
 						const newUpstreamNodeIdList = item.upstreamNodeIdList.filter(x => self.upstreamNodeIdList.indexOf(x) === -1);
-						HierarchyCollection.update({
+						getHierarchyCollection().update({
 							_id: item._id
 						}, {
 							$set: {
@@ -402,7 +402,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						upstreamNodeIdList: [],
 					};
 					_.extend(self, update);
-					HierarchyCollection.update({
+					getHierarchyCollection().update({
 						_id: self._id
 					}, {
 						$set: update
@@ -434,7 +434,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						// update upstreamNodeIdList to include node and its
 						// ancestors
 						const newUpstreamNodeIdList = item.upstreamNodeIdList.concat([node._id], node.upstreamNodeIdList);
-						HierarchyCollection.update({
+						getHierarchyCollection().update({
 							_id: item._id
 						}, {
 							$set: {
@@ -464,7 +464,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 						upstreamNodeIdList: self.upstreamNodeIdList.concat([node._id], node.upstreamNodeIdList)
 					};
 					_.extend(self, update);
-					HierarchyCollection.update({
+					getHierarchyCollection().update({
 						_id: self._id
 					}, {
 						$set: update
@@ -629,24 +629,47 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 			});
 		}
 
-		HierarchyCollection = new Mongo.Collection(hierarchyCollectionName, {
-			transform: function(doc) {
-				return new HierarchyNode(doc);
-			},
-			defineMutationMethods: false
+		const collectionSetup = {};
+		collectionSetup.promise = new Promise(resolve => {
+			collectionSetup.resolve = resolve;
 		});
-		PackageUtilities.addPropertyGetter(HUP, '_HierarchyCollection', () => HierarchyCollection);
-		PackageUtilities.addPropertyGetter(HUP, '_HierarchyCursor', () => HierarchyCollection.find());
-		PackageUtilities.addImmutablePropertyFunction(HUP, 'getHierarchyItem', (selector) => !!selector ? HierarchyCollection.findOne(selector) : HierarchyCollection.findOne());
-		PackageUtilities.addImmutablePropertyFunction(HUP, 'getHierarchyCursor', (selector) => !!selector ? HierarchyCollection.find(selector) : HierarchyCollection.find());
+		const attemptToGetCollection = function attemptToGetCollection(collectionName) {
+			const item = Mongo.Collection.getAll().filter(x => x.name === collectionName).pop();
+			return item && item.instance;
+		};
+		getHierarchyCollection = () => {
+			if (!HierarchyCollection) {
+				HierarchyCollection = attemptToGetCollection(hierarchyCollectionName);
+				if (!HierarchyCollection) {
+					HierarchyCollection = new Mongo.Collection(hierarchyCollectionName, {
+						transform: function(doc) {
+							return new HierarchyNode(doc);
+						},
+						defineMutationMethods: false
+					});
+				}
+				collectionSetup.resolve(true);
+			}
+			return HierarchyCollection;
+		};
+
+		// There seems to be a strange bug with `Mongo.Collection` but there
+		// seems to be no problem if getHierarchyCollection is first called in
+		// packages or in application code.
+		// Meteor.defer(getHierarchyCollection);
+
+		PackageUtilities.addPropertyGetter(HUP, '_HierarchyNodePrototype', () => HierarchyNode.prototype);
+		PackageUtilities.addPropertyGetter(HUP, '_HierarchyCollection', getHierarchyCollection);
+		PackageUtilities.addImmutablePropertyFunction(HUP, 'getHierarchyItem', selector => !!selector ? getHierarchyCollection().findOne(selector) : getHierarchyCollection().findOne());
+		PackageUtilities.addImmutablePropertyFunction(HUP, 'getHierarchyCursor', selector => !!selector ? getHierarchyCollection().find(selector) : getHierarchyCollection().find());
 
 		if (Meteor.isServer) {
-			PackageUtilities.addImmutablePropertyFunction(HUP, 'createHierarchyItem', function createHierarchyItem() {
-				const _id = HierarchyCollection.insert({
+			PackageUtilities.addImmutablePropertyFunction(HUP, 'createHierarchyItem', function createHierarchyItem(data = {}) {
+				const _id = getHierarchyCollection().insert(_.extend({}, data, {
 					parentId: null,
 					upstreamNodeIdList: [],
-				});
-				const item = HierarchyCollection.findOne({
+				}));
+				const item = getHierarchyCollection().findOne({
 					_id: _id
 				});
 				LOG('[createHierarchyItem]', item);
@@ -655,20 +678,20 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 		}
 
 		if (Meteor.isServer) {
-			(function() {
-				const entries = [
-					[
-						['parentId', 1]
-					],
-					[
-						['upstreamNodeIdList', 1]
-					]
-				];
-				_.forEach(entries, entry => {
-					INFO(`db.${HierarchyCollection._name}.createIndex({${entry.map(x => `'${x[0]}': ${x[1]}`).join(', ')}});`);
-					HierarchyCollection._ensureIndex(_.object(entry));
+			const entries = [
+				[
+					['parentId', 1]
+				],
+				[
+					['upstreamNodeIdList', 1]
+				]
+			];
+			_.forEach(entries, entry => {
+				INFO(`db.${hierarchyCollectionName}.createIndex({${entry.map(x => `'${x[0]}': ${x[1]}`).join(', ')}});`);
+				collectionSetup.promise.then(() => {
+					getHierarchyCollection()._ensureIndex(_.object(entry));
 				});
-			}());
+			});
 		}
 	}());
 
@@ -677,7 +700,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 		/*
 			PropertyAssignmentCollection:
 			Schema: {
-				nodeId: HierarchyCollection._id,
+				nodeId: HierarchyCollectionId,
 				entityName: String,
 				property: String,
 			}
@@ -686,9 +709,8 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 			defineMutationMethods: false
 		});
 		PackageUtilities.addPropertyGetter(HUP, '_PropertyAssignmentCollection', () => PropertyAssignmentCollection);
-		PackageUtilities.addPropertyGetter(HUP, '_PropertyAssignmentCursor', () => PropertyAssignmentCollection.find());
-		PackageUtilities.addImmutablePropertyFunction(HUP, 'getPropertyAssignmentItem', (selector) => !!selector ? PropertyAssignmentCollection.findOne(selector) : PropertyAssignmentCollection.findOne());
-		PackageUtilities.addImmutablePropertyFunction(HUP, 'getPropertyAssignmentCursor', (selector) => !!selector ? PropertyAssignmentCollection.find(selector) : PropertyAssignmentCollection.find());
+		PackageUtilities.addImmutablePropertyFunction(HUP, 'getPropertyAssignmentItem', selector => !!selector ? PropertyAssignmentCollection.findOne(selector) : PropertyAssignmentCollection.findOne());
+		PackageUtilities.addImmutablePropertyFunction(HUP, 'getPropertyAssignmentCursor', selector => !!selector ? PropertyAssignmentCollection.find(selector) : PropertyAssignmentCollection.find());
 
 		if (Meteor.isServer) {
 			(function() {
@@ -722,7 +744,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 		/*
 			MaterializedDataCollection:
 			Schema: {
-				nodeId: HierarchyCollection._id,
+				nodeId: HierarchyCollectionId,
 				entityName: String,
 				property: String,
 				metadata: Object,
@@ -733,9 +755,8 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 			defineMutationMethods: false
 		});
 		PackageUtilities.addPropertyGetter(HUP, '_MaterializedDataCollection', () => MaterializedDataCollection);
-		PackageUtilities.addPropertyGetter(HUP, '_MaterializedDataCursor', () => MaterializedDataCollection.find());
-		PackageUtilities.addImmutablePropertyFunction(HUP, 'getMaterializedDataItem', (selector) => !!selector ? MaterializedDataCollection.findOne(selector) : MaterializedDataCollection.findOne());
-		PackageUtilities.addImmutablePropertyFunction(HUP, 'getMaterializedDataCursor', (selector) => !!selector ? MaterializedDataCollection.find(selector) : MaterializedDataCollection.find());
+		PackageUtilities.addImmutablePropertyFunction(HUP, 'getMaterializedDataItem', selector => !!selector ? MaterializedDataCollection.findOne(selector) : MaterializedDataCollection.findOne());
+		PackageUtilities.addImmutablePropertyFunction(HUP, 'getMaterializedDataCursor', selector => !!selector ? MaterializedDataCollection.find(selector) : MaterializedDataCollection.find());
 
 		if (Meteor.isServer) {
 			(function() {
@@ -767,7 +788,7 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 	}());
 
 	PackageUtilities.addImmutablePropertyFunction(HUP, '_buildForest', function buildForest() {
-		const roots = HierarchyCollection.find({
+		const roots = getHierarchyCollection().find({
 			parentId: null
 		}).fetch();
 		roots.forEach(node => node._buildTree());

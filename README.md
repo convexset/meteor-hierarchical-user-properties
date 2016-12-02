@@ -23,6 +23,7 @@ Note that the usual "top of the pyramid owns everything" functionality can be ac
         - [The "Property Assignment Collection"](#the-property-assignment-collection)
         - [The "Materialized Property Data Collection"](#the-materialized-property-data-collection)
     - [Methods on Items from the "Hierarchy Collection"](#methods-on-items-from-the-hierarchy-collection)
+- [Advanced Usage: Providing Hierarchical Properties for an Existing Collection](#advanced-usage-providing-hierarchical-properties-for-an-existing-collection)
 - [Philosophy](#philosophy)
 
 <!-- /MarkdownTOC -->
@@ -73,11 +74,11 @@ In the options above:
  - `propertyAssignmentCollectionName` gives the collection name for the associated "property assignment collection"
  - `materializedDataCollectionName` gives the collection name for the associated "materialized property data collection"
 
-The resulting object `HierarchicalUserProperties` may then be used as follows.
+The resulting object `HierarchicalUserProperties` may then be used as follows...
 
 ### Creating Hierarchy Items
 
-`HierarchicalUserProperties.createHierarchyItem()`: creates a hierarchy item with no parent node (a root of a new tree); also returns the created item
+`HierarchicalUserProperties.createHierarchyItem(data = {})`: creates a hierarchy item with no parent node (a root of a new tree) with data `data` (do not include keys `parentId` and `upstreamNodeIdList`, they will be overwritten); also returns the created item
 
 ### Getting Items and Cursors
 
@@ -132,7 +133,7 @@ Informal Schema Description:
 Given a node called `node`...
 
 CRUD Methods:
- - `node.createChild()`: creates a child on `node`; also returns the created item
+ - `node.createChild(data = {})`: creates a child on `node` with data `data` (do not include keys `parentId` and `upstreamNodeIdList`, they will be overwritten); also returns the created item
  - `node.getChildren()`: gets all children (direct descendants) of `node` (returns an array)
  - `node.getAllDescendants()`: gets all descendants of `node` (returns an array)
  - `node.removeNode()`: removes `node` and sets parent of the children of `node` to the parent (if any) of `node`
@@ -151,6 +152,38 @@ Property Assignment and Materialized Property Data Methods:
  - `node.getEntitiesWithProperty_OriginalAssignments(property)`: gets property assignments at `node` for property `property`
  - `node.getPropertiesForEntity(entityName)`: gets implied property information (materialized property data) at `node` for entity with name `entityName`
  - `node.getEntitiesWithProperty(property)`: gets implied property information (materialized property data) at `node` for property `property`
+
+## Advanced Usage: Providing Hierarchical Properties for an Existing Collection
+
+Link the relevant ORM prototype to `HierarchicalUserProperties._HierarchyNodePrototype`, and you may use the relevant objects with extended methods. (Remember to set the `hierarchyCollectionName` as described under [Usage](#usage).) For example:
+
+```javascript
+const HierarchicalUserProperties = HierarchicalUserPropertiesFactory({
+    name: 'MyMagicTree',
+    hierarchyCollectionName: 'Tree', // note this name
+    propertyAssignmentCollectionName: 'TreePropertyAssignments',
+    materializedDataCollectionName: 'TreeMaterializedData'
+});
+
+function TreeItem(doc) {
+    _.extend(this, doc);
+    console.log('[TreeItem Transform]', this);
+}
+
+// the said prototype linkage
+TreeItem.prototype = Object.create(HierarchicalUserProperties._HierarchyNodePrototype);
+TreeItem.prototype.getSelfAndAncestors = function getSelfAndAncestors() {
+    return [this._id].concat(this.upstreamNodeIdList);
+};
+
+// define the relevant collection with the aforementioned name
+const TreeItem = new Mongo.Collection('Tree', {
+    transform: doc => new TreeItem(doc),
+});
+```
+
+Make sure not to attempt to access `HierarchicalUserProperties._HierarchyCollection` before the creation of the collection
+
 
 ## Philosophy
 
