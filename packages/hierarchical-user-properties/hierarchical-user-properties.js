@@ -146,6 +146,18 @@ HierarchicalUserPropertiesFactory = function HierarchicalUserPropertiesFactory({
 					nodeId: this._id,
 				}).fetch();
 			},
+			getMaterializedPropertyDataForEntity: function getMaterializedPropertyDataForEntity(entityName) {
+				return MaterializedDataCollection.find({
+					nodeId: this._id,
+					entityName: entityName,
+				}).fetch();
+			},
+			getMaterializedPropertyDataForProperty: function getMaterializedPropertyDataForProperty(property) {
+				return MaterializedDataCollection.find({
+					nodeId: this._id,
+					property: property,
+				}).fetch();
+			},
 			getPropertiesForEntity_OriginalAssignments: function getPropertiesForEntityOriginalAssignments(entityName) {
 				return PropertyAssignmentCollection.find({
 					nodeId: this._id,

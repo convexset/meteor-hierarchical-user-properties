@@ -148,6 +148,8 @@ Property Assignment and Materialized Property Data Methods:
  - `node.removePropertyForEntity(entityName, property)`: removes the property assignment of property `property` on `node` for entity with name `entityName`
  - `node.getPropertyAssignments()`: returns all property assignments on `node`
  - `node.getMaterializedPropertyData()`: returns all implied property information (materialized property data) at `node`
+ - `node.getMaterializedPropertyDataDataForEntity(entityName)`: returns all implied property information (materialized property data) at `node` for entity with name `entityName`
+ - `node.getMaterializedPropertyDataDataForProperty(property)`: returns all implied property information (materialized property data) at `node` for property with name `property`
  - `node.getPropertiesForEntity_OriginalAssignments(entityName)`: gets property assignments at `node` for entity with name `entityName`
  - `node.getEntitiesWithProperty_OriginalAssignments(property)`: gets property assignments at `node` for property `property`
  - `node.getPropertiesForEntity(entityName)`: gets implied property information (materialized property data) at `node` for entity with name `entityName`
